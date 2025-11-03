@@ -4,6 +4,20 @@ use std::path::PathBuf;
 use sysinfo::{Disks, System};
 use tauri::Emitter;
 
+#[cfg(target_os = "windows")]
+fn is_elevated() -> bool {
+    use std::process::Command;
+    
+    let output = Command::new("net")
+        .args(&["session"])
+        .output();
+    
+    match output {
+        Ok(output) => output.status.success(),
+        Err(_) => false,
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TempFile {
     pub path: String,
@@ -515,86 +529,82 @@ pub struct MemoryOptimizationResult {
     pub freed: u64,
     pub success: bool,
     pub message: String,
+    pub is_admin: bool,
 }
 
 #[tauri::command]
-fn optimize_memory() -> Result<MemoryOptimizationResult, String> {
+async fn optimize_memory() -> Result<MemoryOptimizationResult, String> {
+    use std::process::Command;
+    
     let mut sys = System::new_all();
     sys.refresh_memory();
     
     let before_used = sys.used_memory();
     let mut success_count = 0;
-    let mut total_operations = 0;
     
     #[cfg(target_os = "windows")]
-    {
-        use std::process::Command;
-        
-        // 1. Try to empty standby list (requires admin, but worth trying)
-        total_operations += 1;
-        let standby_result = Command::new("powershell")
-            .args(&[
-                "-Command",
-                "Clear-Variable * -ErrorAction SilentlyContinue; [System.GC]::Collect(); [System.GC]::WaitForPendingFinalizers()"
-            ])
-            .output();
-        if standby_result.is_ok() {
-            success_count += 1;
-        }
-        
-        // 2. Empty working sets of processes (EmptyWorkingSet API simulation)
-        total_operations += 1;
-        let working_set_result = Command::new("powershell")
-            .args(&[
-                "-Command",
-                "$processes = Get-Process | Where-Object {$_.WorkingSet64 -gt 10MB}; foreach($p in $processes) { try { $p.MinWorkingSet = 1; $p.MaxWorkingSet = 1 } catch {} }"
-            ])
-            .output();
-        if working_set_result.is_ok() {
-            success_count += 1;
-        }
-        
-        // 3. Clear DNS cache
-        total_operations += 1;
-        let dns_result = Command::new("ipconfig")
-            .args(&["/flushdns"])
-            .output();
-        if dns_result.is_ok() {
-            success_count += 1;
-        }
-        
-        // 4. Clear clipboard (can hold large data)
-        total_operations += 1;
-        let clipboard_result = Command::new("powershell")
-            .args(&["-Command", "Set-Clipboard -Value $null"])
-            .output();
-        if clipboard_result.is_ok() {
-            success_count += 1;
-        }
-        
-        // 5. Force system cache flush
-        total_operations += 1;
-        let cache_result = Command::new("powershell")
-            .args(&[
-                "-Command",
-                "[System.Runtime.GCSettings]::LargeObjectHeapCompactionMode = 'CompactOnce'; [System.GC]::Collect([System.GC]::MaxGeneration, [System.GCCollectionMode]::Forced, $true, $true)"
-            ])
-            .output();
-        if cache_result.is_ok() {
-            success_count += 1;
-        }
-        
-        // Wait for operations to complete
-        std::thread::sleep(std::time::Duration::from_millis(1500));
-    }
+    let is_admin = is_elevated();
     
     #[cfg(not(target_os = "windows"))]
-    {
+    let is_admin = false;
+    
+    #[cfg(target_os = "windows")]
+    let total_operations = {
+        // Execute operations in parallel using tokio
+        let handles = vec![
+            // 1. Clear DNS cache (fast operation)
+            tokio::spawn(async {
+                Command::new("ipconfig")
+                    .args(&["/flushdns"])
+                    .output()
+                    .is_ok()
+            }),
+            
+            // 2. Clear clipboard (fast operation)
+            tokio::spawn(async {
+                Command::new("powershell")
+                    .args(&["-NoProfile", "-Command", "Set-Clipboard -Value $null"])
+                    .output()
+                    .is_ok()
+            }),
+            
+            // 3. Force garbage collection (lightweight)
+            tokio::spawn(async {
+                Command::new("powershell")
+                    .args(&[
+                        "-NoProfile",
+                        "-Command",
+                        "[System.GC]::Collect(); [System.GC]::WaitForPendingFinalizers()"
+                    ])
+                    .output()
+                    .is_ok()
+            }),
+        ];
+        
+        let total = handles.len();
+        
+        // Wait for all operations to complete
+        for handle in handles {
+            if let Ok(result) = handle.await {
+                if result {
+                    success_count += 1;
+                }
+            }
+        }
+        
+        // Brief wait for system to stabilize
+        tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
+        
+        total
+    };
+    
+    #[cfg(not(target_os = "windows"))]
+    let total_operations = {
         // For non-Windows systems, just do basic cleanup
-        total_operations = 1;
         success_count = 1;
-        std::thread::sleep(std::time::Duration::from_millis(500));
-    }
+        tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;
+        1
+    };
     
     // Force Rust to drop unused memory
     drop(sys);
@@ -610,12 +620,14 @@ fn optimize_memory() -> Result<MemoryOptimizationResult, String> {
         0
     };
     
-    let message = if success_count == total_operations {
-        "Todas as operações de otimização foram executadas com sucesso".to_string()
+    let message = if !is_admin {
+        "Otimização básica executada - execute como administrador para melhores resultados".to_string()
+    } else if success_count == total_operations {
+        "Memória otimizada com sucesso".to_string()
     } else if success_count > 0 {
-        format!("{} de {} operações executadas com sucesso", success_count, total_operations)
+        format!("Otimização parcial: {} de {} operações concluídas", success_count, total_operations)
     } else {
-        "Algumas operações requerem privilégios administrativos".to_string()
+        "Não foi possível otimizar a memória".to_string()
     };
     
     Ok(MemoryOptimizationResult {
@@ -624,6 +636,7 @@ fn optimize_memory() -> Result<MemoryOptimizationResult, String> {
         freed,
         success: success_count > 0,
         message,
+        is_admin,
     })
 }
 

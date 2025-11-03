@@ -141,13 +141,20 @@ export default function Dashboard() {
         freed: number; 
         success: boolean;
         message: string;
+        is_admin: boolean;
       }>('optimize_memory');
       
       setMemoryFreed(result.freed);
       setMemoryOptimized(result.success);
       
+      if (!result.is_admin) {
+        console.warn('⚠️ Rodando sem privilégios administrativos - eficiência limitada');
+      }
+      
       if (!result.success) {
         console.warn('Otimização parcial:', result.message);
+      } else {
+        console.log('✓', result.message);
       }
       
       // Atualizar informações do sistema após otimização
