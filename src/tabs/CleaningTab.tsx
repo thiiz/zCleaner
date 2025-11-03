@@ -42,7 +42,7 @@ export default function CleaningTab() {
     setIsScanning(true);
     setIsDialogOpen(true);
     setDeleteComplete(false);
-    
+
     try {
       const result = await invoke<ScanResult>('scan_temp_files');
       setScanResult(result);
@@ -68,7 +68,7 @@ export default function CleaningTab() {
   const toggleCategory = (category: string) => {
     const categoryFiles = scanResult?.files.filter(f => f.category === category) || [];
     const allSelected = categoryFiles.every(f => selectedFiles.has(f.path));
-    
+
     const newSelected = new Set(selectedFiles);
     categoryFiles.forEach(f => {
       if (allSelected) {
@@ -82,13 +82,13 @@ export default function CleaningTab() {
 
   const handleDelete = async () => {
     if (selectedFiles.size === 0) return;
-    
+
     setIsDeleting(true);
     setDeleteProgress(0);
-    
+
     try {
       const pathsToDelete = Array.from(selectedFiles);
-      
+
       // Simulate progress (in real app, you'd get progress from backend)
       const progressInterval = setInterval(() => {
         setDeleteProgress(prev => {
@@ -101,12 +101,12 @@ export default function CleaningTab() {
       }, 100);
 
       const result = await invoke<number>('delete_temp_files', { paths: pathsToDelete });
-      
+
       clearInterval(progressInterval);
       setDeleteProgress(100);
       setDeletedSize(result);
       setDeleteComplete(true);
-      
+
       // Reset after showing success
       setTimeout(() => {
         setIsDialogOpen(false);
@@ -227,7 +227,7 @@ export default function CleaningTab() {
               {deleteComplete ? 'Limpeza Concluída!' : 'Selecione os Arquivos para Remover'}
             </DialogTitle>
             <DialogDescription>
-              {deleteComplete 
+              {deleteComplete
                 ? `${formatBytes(deletedSize)} foram liberados com sucesso`
                 : 'Escolha quais arquivos temporários você deseja deletar'
               }
@@ -252,7 +252,7 @@ export default function CleaningTab() {
                 {Object.entries(groupedFiles).map(([category, files]) => {
                   const categorySize = files.reduce((sum, f) => sum + f.size, 0);
                   const allSelected = files.every(f => selectedFiles.has(f.path));
-                  
+
                   return (
                     <div key={category} className="space-y-2">
                       <div className="flex items-center justify-between p-3 bg-[#0f0f0f] rounded-lg border border-[#1f1f1f]">
@@ -270,7 +270,7 @@ export default function CleaningTab() {
                           </span>
                         </label>
                       </div>
-                      
+
                       <div className="ml-7 space-y-1">
                         {files.map((file) => (
                           <label
