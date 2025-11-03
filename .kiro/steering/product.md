@@ -8,6 +8,7 @@
 - **File Management**: Safely deletes temporary files with progress tracking
 - **System Monitoring**: Displays CPU, memory, and disk usage statistics
 - **File Explorer Integration**: Opens file locations in Windows Explorer
+- **Process Management**: Modal interface to view, monitor, and terminate running processes with real-time CPU, memory, and disk usage
 
 ## Target Platform
 

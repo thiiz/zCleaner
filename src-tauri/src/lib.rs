@@ -532,6 +532,16 @@ pub struct MemoryOptimizationResult {
     pub is_admin: bool,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ProcessInfo {
+    pub pid: u32,
+    pub name: String,
+    pub cpu_usage: f32,
+    pub memory: u64,
+    pub disk_usage: u64,
+    pub status: String,
+}
+
 #[tauri::command]
 async fn optimize_memory() -> Result<MemoryOptimizationResult, String> {
     use std::process::Command;
@@ -640,6 +650,55 @@ async fn optimize_memory() -> Result<MemoryOptimizationResult, String> {
     })
 }
 
+#[tauri::command]
+fn get_processes() -> Result<Vec<ProcessInfo>, String> {
+    let mut sys = System::new_all();
+    sys.refresh_all();
+    
+    let cpu_count = sys.cpus().len() as f32;
+    let mut processes = Vec::new();
+    
+    for (pid, process) in sys.processes() {
+        let status = if process.status().to_string().contains("Run") {
+            "Executando".to_string()
+        } else if process.status().to_string().contains("Sleep") {
+            "Suspenso".to_string()
+        } else {
+            process.status().to_string()
+        };
+        
+        // Normalizar CPU usage dividindo pelo número de núcleos
+        let cpu_usage = process.cpu_usage() / cpu_count;
+        
+        processes.push(ProcessInfo {
+            pid: pid.as_u32(),
+            name: process.name().to_string_lossy().to_string(),
+            cpu_usage,
+            memory: process.memory(),
+            disk_usage: process.disk_usage().total_read_bytes + process.disk_usage().total_written_bytes,
+            status,
+        });
+    }
+    
+    Ok(processes)
+}
+
+#[tauri::command]
+fn kill_process(pid: u32) -> Result<bool, String> {
+    let mut sys = System::new_all();
+    sys.refresh_all();
+    
+    if let Some(process) = sys.process(sysinfo::Pid::from_u32(pid)) {
+        if process.kill() {
+            Ok(true)
+        } else {
+            Err("Não foi possível encerrar o processo".to_string())
+        }
+    } else {
+        Err("Processo não encontrado".to_string())
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -650,7 +709,9 @@ pub fn run() {
             get_system_info,
             get_disk_info,
             open_folder_location,
-            optimize_memory
+            optimize_memory,
+            get_processes,
+            kill_process
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

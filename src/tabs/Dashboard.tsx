@@ -12,6 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useSystemInfo } from '@/hooks/useSystemInfo';
 import { formatBytes, formatBytesToGB, formatBytesAuto, formatBytesUnit } from '@/lib/formatBytes';
+import ProcessManager from './ProcessManager';
 
 interface TempFile {
   path: string;
@@ -65,6 +66,9 @@ export default function Dashboard() {
   const [isOptimizingMemory, setIsOptimizingMemory] = useState(false);
   const [memoryOptimized, setMemoryOptimized] = useState(false);
   const [memoryFreed, setMemoryFreed] = useState(0);
+
+  // Estados para gerenciamento de processos
+  const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
 
   const handleScan = async () => {
     setIsScanning(true);
@@ -133,35 +137,35 @@ export default function Dashboard() {
   const handleOptimizeMemory = async () => {
     setIsOptimizingMemory(true);
     setMemoryOptimized(false);
-    
+
     try {
-      const result = await invoke<{ 
-        before_used: number; 
-        after_used: number; 
-        freed: number; 
+      const result = await invoke<{
+        before_used: number;
+        after_used: number;
+        freed: number;
         success: boolean;
         message: string;
         is_admin: boolean;
       }>('optimize_memory');
-      
+
       setMemoryFreed(result.freed);
       setMemoryOptimized(result.success);
-      
+
       if (!result.is_admin) {
         console.warn('⚠️ Rodando sem privilégios administrativos - eficiência limitada');
       }
-      
+
       if (!result.success) {
         console.warn('Otimização parcial:', result.message);
       } else {
         console.log('✓', result.message);
       }
-      
+
       // Atualizar informações do sistema após otimização
       setTimeout(() => {
         refetch();
       }, 1000);
-      
+
       // Resetar estado após 5 segundos
       setTimeout(() => {
         setMemoryOptimized(false);
@@ -298,8 +302,8 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className={`text-xs font-medium px-2 py-1 rounded ${memoryUsagePercent > 80 ? 'bg-red-500/10 text-red-500' :
-                  memoryUsagePercent > 60 ? 'bg-yellow-500/10 text-yellow-500' :
-                    'bg-[var(--color-success)]/10 text-[var(--color-success)]'
+                memoryUsagePercent > 60 ? 'bg-yellow-500/10 text-yellow-500' :
+                  'bg-[var(--color-success)]/10 text-[var(--color-success)]'
                 }`}>
                 {Math.round(memoryUsagePercent)}%
               </div>
@@ -314,8 +318,8 @@ export default function Dashboard() {
                 <div className="relative h-2 bg-[var(--color-border)] rounded-full overflow-hidden mb-1">
                   <div
                     className={`absolute inset-y-0 left-0 rounded-full transition-all duration-500 ${memoryUsagePercent > 80 ? 'bg-red-500' :
-                        memoryUsagePercent > 60 ? 'bg-yellow-500' :
-                          'bg-purple-500'
+                      memoryUsagePercent > 60 ? 'bg-yellow-500' :
+                        'bg-purple-500'
                       }`}
                     style={{ width: `${memoryUsagePercent}%` }}
                   />
@@ -341,8 +345,8 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className={`text-xs font-medium px-2 py-1 rounded ${diskUsagePercent > 90 ? 'bg-red-500/10 text-red-500' :
-                  diskUsagePercent > 75 ? 'bg-yellow-500/10 text-yellow-500' :
-                    'bg-[var(--color-success)]/10 text-[var(--color-success)]'
+                diskUsagePercent > 75 ? 'bg-yellow-500/10 text-yellow-500' :
+                  'bg-[var(--color-success)]/10 text-[var(--color-success)]'
                 }`}>
                 {Math.round(diskUsagePercent)}%
               </div>
@@ -357,8 +361,8 @@ export default function Dashboard() {
                 <div className="relative h-2 bg-[var(--color-border)] rounded-full overflow-hidden mb-1">
                   <div
                     className={`absolute inset-y-0 left-0 rounded-full transition-all duration-500 ${diskUsagePercent > 90 ? 'bg-red-500' :
-                        diskUsagePercent > 75 ? 'bg-yellow-500' :
-                          'bg-green-500'
+                      diskUsagePercent > 75 ? 'bg-yellow-500' :
+                        'bg-green-500'
                       }`}
                     style={{ width: `${diskUsagePercent}%` }}
                   />
@@ -456,14 +460,14 @@ export default function Dashboard() {
                         Otimizar Memória
                       </p>
                       <p className="text-xs text-[var(--color-text-tertiary)]">
-                        {memoryOptimized 
+                        {memoryOptimized
                           ? `${formatBytes(memoryFreed)} liberados`
                           : 'Liberar RAM não utilizada'
                         }
                       </p>
                     </div>
                   </div>
-                  <AnimatedButton 
+                  <AnimatedButton
                     variant={memoryOptimized ? "primary" : "secondary"}
                     size="sm"
                     onClick={handleOptimizeMemory}
@@ -491,7 +495,11 @@ export default function Dashboard() {
                       </p>
                     </div>
                   </div>
-                  <AnimatedButton variant="secondary" size="sm">
+                  <AnimatedButton
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setIsProcessModalOpen(true)}
+                  >
                     Abrir
                   </AnimatedButton>
                 </div>
@@ -548,8 +556,8 @@ export default function Dashboard() {
                         {disk.mount_point}
                       </span>
                       <span className={`text-xs px-2 py-0.5 rounded flex-shrink-0 ${diskPercent > 90 ? 'bg-red-500/10 text-red-500' :
-                          diskPercent > 75 ? 'bg-yellow-500/10 text-yellow-500' :
-                            'bg-[var(--color-success)]/10 text-[var(--color-success)]'
+                        diskPercent > 75 ? 'bg-yellow-500/10 text-yellow-500' :
+                          'bg-[var(--color-success)]/10 text-[var(--color-success)]'
                         }`}>
                         {Math.round(diskPercent)}%
                       </span>
@@ -557,8 +565,8 @@ export default function Dashboard() {
                     <div className="relative h-1.5 bg-[var(--color-border)] rounded-full overflow-hidden mb-2">
                       <div
                         className={`absolute inset-y-0 left-0 rounded-full ${diskPercent > 90 ? 'bg-red-500' :
-                            diskPercent > 75 ? 'bg-yellow-500' :
-                              'bg-green-500'
+                          diskPercent > 75 ? 'bg-yellow-500' :
+                            'bg-green-500'
                           }`}
                         style={{ width: `${diskPercent}%` }}
                       />
@@ -798,6 +806,12 @@ export default function Dashboard() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Modal de Gerenciamento de Processos */}
+      <ProcessManager
+        open={isProcessModalOpen}
+        onOpenChange={setIsProcessModalOpen}
+      />
     </>
   );
 }

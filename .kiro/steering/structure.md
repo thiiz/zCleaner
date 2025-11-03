@@ -75,6 +75,8 @@ Rust functions exposed to frontend are defined in `src-tauri/src/lib.rs`:
 - `get_system_info()` - Returns CPU, memory, OS information
 - `get_disk_info()` - Returns disk usage information
 - `open_folder_location()` - Opens file location in Explorer
+- `get_processes()` - Returns list of running processes with resource usage
+- `kill_process()` - Terminates a process by PID
 
 ### Design System
 
