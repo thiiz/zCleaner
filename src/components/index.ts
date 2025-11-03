@@ -12,9 +12,6 @@ export type { AnimatedButtonProps } from './AnimatedButton';
 export { default as StatDisplay } from './StatDisplay';
 export type { StatDisplayProps } from './StatDisplay';
 
-export { LoadingState } from './enhanced/LoadingState';
-export type { LoadingStateProps } from './enhanced/LoadingState';
-
 export { ErrorState } from './ErrorState';
 export type { ErrorStateProps } from './ErrorState';
 

@@ -36,7 +36,7 @@ export default function ProcessManager({ open, onOpenChange }: ProcessManagerPro
       const result = await invoke<ProcessInfo[]>('get_processes');
       setProcesses(result);
     } catch (error) {
-      showToast(`Erro ao carregar processos: ${error}`, 'error');
+      showToast({ type: 'error', message: `Erro ao carregar processos: ${error}` });
     } finally {
       setLoading(false);
     }
@@ -55,10 +55,10 @@ export default function ProcessManager({ open, onOpenChange }: ProcessManagerPro
     
     try {
       await invoke('kill_process', { pid });
-      showToast(`Processo "${name}" encerrado com sucesso`, 'success');
+      showToast({ type: 'success', message: `Processo "${name}" encerrado com sucesso` });
       loadProcesses();
     } catch (error) {
-      showToast(`Erro ao encerrar processo: ${error}`, 'error');
+      showToast({ type: 'error', message: `Erro ao encerrar processo: ${error}` });
     }
   };
 
