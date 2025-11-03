@@ -7,12 +7,11 @@ import CleaningTab from './tabs/CleaningTab';
 import PerformanceTab from './tabs/PerformanceTab';
 import StartupTab from './tabs/StartupTab';
 import PowerTab from './tabs/PowerTab';
-import SystemTab from './tabs/SystemTab';
 import { ToastProvider } from './components/enhanced/ToastContainer';
 import './App.css';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<TabType>('cleaning');
+  const [activeTab, setActiveTab] = useState<TabType>('performance');
 
   return (
     <ToastProvider position="top-right" maxToasts={3}>
@@ -34,7 +33,6 @@ function App() {
               {activeTab === 'performance' && <PerformanceTab key="performance" />}
               {activeTab === 'startup' && <StartupTab key="startup" />}
               {activeTab === 'power' && <PowerTab key="power" />}
-              {activeTab === 'system' && <SystemTab key="system" />}
             </AnimatePresence>
           </main>
         </div>
