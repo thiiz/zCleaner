@@ -52,16 +52,16 @@ export interface LoadingStateProps
  * Spinner animation variants
  * Continuous rotation animation (respects reduced motion)
  */
-const getSpinnerVariants = (shouldReduceMotion: boolean) => ({
-  animate: {
-    rotate: shouldReduceMotion ? 0 : 360,
-    transition: {
-      duration: shouldReduceMotion ? 0 : 1,
-      repeat: shouldReduceMotion ? 0 : Infinity,
-      ease: 'linear' as const,
-    },
-  },
-});
+// const getSpinnerVariants = (shouldReduceMotion: boolean) => ({
+//   animate: {
+//     rotate: shouldReduceMotion ? 0 : 360,
+//     transition: {
+//       duration: shouldReduceMotion ? 0 : 1,
+//       repeat: shouldReduceMotion ? 0 : Infinity,
+//       ease: 'linear' as const,
+//     },
+//   },
+// });
 
 /**
  * Skeleton pulse animation variants (respects reduced motion)

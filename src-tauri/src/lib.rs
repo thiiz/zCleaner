@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
-use tauri::{Emitter, Manager};
+use sysinfo::{System, Disks};
+use tauri::Emitter;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TempFile {
@@ -163,11 +164,86 @@ fn delete_temp_files(app: tauri::AppHandle, paths: Vec<String>) -> Result<u64, S
     Ok(deleted_size)
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SystemInfo {
+    pub cpu_name: String,
+    pub cpu_cores: usize,
+    pub total_memory: u64,
+    pub used_memory: u64,
+    pub os_name: String,
+    pub os_version: String,
+    pub kernel_version: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DiskInfo {
+    pub name: String,
+    pub mount_point: String,
+    pub total_space: u64,
+    pub available_space: u64,
+    pub is_removable: bool,
+    pub file_system: String,
+}
+
+#[tauri::command]
+fn get_system_info() -> Result<SystemInfo, String> {
+    let mut sys = System::new_all();
+    sys.refresh_all();
+
+    let cpu_name = sys
+        .cpus()
+        .first()
+        .map(|cpu| cpu.brand().to_string())
+        .unwrap_or_else(|| "Desconhecido".to_string());
+
+    let cpu_cores = sys.cpus().len();
+    let total_memory = sys.total_memory();
+    let used_memory = sys.used_memory();
+
+    let os_name = System::name().unwrap_or_else(|| "Desconhecido".to_string());
+    let os_version = System::os_version().unwrap_or_else(|| "Desconhecido".to_string());
+    let kernel_version = System::kernel_version().unwrap_or_else(|| "Desconhecido".to_string());
+
+    Ok(SystemInfo {
+        cpu_name,
+        cpu_cores,
+        total_memory,
+        used_memory,
+        os_name,
+        os_version,
+        kernel_version,
+    })
+}
+
+#[tauri::command]
+fn get_disk_info() -> Result<Vec<DiskInfo>, String> {
+    let disks = Disks::new_with_refreshed_list();
+    let mut disk_list = Vec::new();
+
+    for disk in disks.list() {
+        disk_list.push(DiskInfo {
+            name: disk.name().to_string_lossy().to_string(),
+            mount_point: disk.mount_point().to_string_lossy().to_string(),
+            total_space: disk.total_space(),
+            available_space: disk.available_space(),
+            is_removable: disk.is_removable(),
+            file_system: disk.file_system().to_string_lossy().to_string(),
+        });
+    }
+
+    Ok(disk_list)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![scan_temp_files, delete_temp_files])
+        .invoke_handler(tauri::generate_handler![
+            scan_temp_files,
+            delete_temp_files,
+            get_system_info,
+            get_disk_info
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
