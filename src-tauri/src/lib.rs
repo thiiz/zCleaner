@@ -70,6 +70,36 @@ fn scan_temp_files() -> Result<ScanResult, String> {
         }
     }
 
+    // Windows System Temp folder
+    let system_temp_path = PathBuf::from("C:\\Windows\\Temp");
+    if system_temp_path.exists() {
+        let root_path = system_temp_path.to_string_lossy().to_string();
+        if let Ok(entries) = fs::read_dir(&system_temp_path) {
+            for entry in entries.flatten() {
+                if let Ok(metadata) = entry.metadata() {
+                    let size = if metadata.is_file() {
+                        metadata.len()
+                    } else if metadata.is_dir() {
+                        get_dir_size(&entry.path())
+                    } else {
+                        0
+                    };
+
+                    if size > 0 {
+                        files.push(TempFile {
+                            path: entry.path().to_string_lossy().to_string(),
+                            name: entry.file_name().to_string_lossy().to_string(),
+                            size,
+                            category: "Arquivos Temporários do Sistema".to_string(),
+                            root_path: root_path.clone(),
+                        });
+                        total_size += size;
+                    }
+                }
+            }
+        }
+    }
+
     // Windows Prefetch
     let prefetch_path = PathBuf::from("C:\\Windows\\Prefetch");
     if prefetch_path.exists() {
