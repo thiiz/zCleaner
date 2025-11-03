@@ -1,75 +1,119 @@
 import { motion } from 'framer-motion';
 import { MemoryStick, Activity, Database } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { InteractiveCard } from '@/components/enhanced/InteractiveCard';
+import { AnimatedButton } from '@/components/enhanced/AnimatedButton';
+import StatDisplay from '@/components/enhanced/StatDisplay';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+
+// Page transition variants for Framer Motion
+const getPageVariants = (shouldReduceMotion: boolean) => ({
+  initial: { opacity: shouldReduceMotion ? 1 : 0, y: shouldReduceMotion ? 0 : 20 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: shouldReduceMotion ? 0 : 0.3 }
+  },
+  exit: {
+    opacity: shouldReduceMotion ? 1 : 0,
+    y: shouldReduceMotion ? 0 : -20,
+    transition: { duration: shouldReduceMotion ? 0 : 0.2 }
+  }
+});
 
 export default function PerformanceTab() {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.2 }}
-      className="space-y-6 md:space-y-8"
+      variants={getPageVariants(shouldReduceMotion)}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="space-y-6 lg:space-y-8"
     >
-      <h2 className="text-xl md:text-2xl font-medium text-neutral-200 tracking-tight">Otimização de Desempenho</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+      <h2 className="text-xl lg:text-2xl font-medium text-[var(--color-text-primary)] tracking-tight">
+        Otimização de Desempenho
+      </h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-5 transition-all duration-[var(--transition-base)]">
         {/* Otimização de RAM Card */}
-        <Card className="bg-[#141414] border-[#1f1f1f] hover:border-[#2a2a2a]">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3 text-neutral-200 text-base font-medium">
-              <MemoryStick className="w-4 h-4 text-neutral-400" />
+        <InteractiveCard className="flex flex-col">
+          <div className="flex items-center gap-3 mb-2">
+            <MemoryStick className="w-5 h-5 text-[var(--color-text-secondary)]" />
+            <h3 className="text-base font-medium text-[var(--color-text-primary)]">
               Otimização de RAM
-            </CardTitle>
-            <CardDescription className="text-neutral-500 text-sm">
-              Liberar memória não utilizada
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-neutral-400 text-sm">8.2 GB / 16 GB em uso</p>
-          </CardContent>
-          <CardFooter>
-            <Button>Otimizar</Button>
-          </CardFooter>
-        </Card>
+            </h3>
+          </div>
+          <p className="text-sm text-[var(--color-text-tertiary)] mb-4">
+            Liberar memória não utilizada
+          </p>
+          <div className="mb-6 flex-1">
+            <StatDisplay
+              label="Memória em Uso"
+              value="8.2 GB"
+              unit="/ 16 GB"
+              size="md"
+              mono={true}
+            />
+          </div>
+          <AnimatedButton
+            variant="primary"
+            size="md"
+            className="w-full"
+          >
+            Otimizar
+          </AnimatedButton>
+        </InteractiveCard>
 
         {/* Processos em Segundo Plano Card */}
-        <Card className="bg-[#141414] border-[#1f1f1f] hover:border-[#2a2a2a]">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3 text-neutral-200 text-base font-medium">
-              <Activity className="w-4 h-4 text-neutral-400" />
+        <InteractiveCard className="flex flex-col">
+          <div className="flex items-center gap-3 mb-2">
+            <Activity className="w-5 h-5 text-[var(--color-text-secondary)]" />
+            <h3 className="text-base font-medium text-[var(--color-text-primary)]">
               Processos em Segundo Plano
-            </CardTitle>
-            <CardDescription className="text-neutral-500 text-sm">
-              Gerenciar processos desnecessários
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-neutral-400 text-sm">47 processos ativos</p>
-          </CardContent>
-          <CardFooter>
-            <Button>Ver Processos</Button>
-          </CardFooter>
-        </Card>
+            </h3>
+          </div>
+          <p className="text-sm text-[var(--color-text-tertiary)] mb-4">
+            Gerenciar processos desnecessários
+          </p>
+          <div className="mb-6 flex-1">
+            <StatDisplay
+              label="Processos Ativos"
+              value="47"
+              size="md"
+              mono={true}
+            />
+          </div>
+          <AnimatedButton
+            variant="primary"
+            size="md"
+            className="w-full"
+          >
+            Ver Processos
+          </AnimatedButton>
+        </InteractiveCard>
 
         {/* Cache de Sistema Card */}
-        <Card className="bg-[#141414] border-[#1f1f1f] hover:border-[#2a2a2a]">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3 text-neutral-200 text-base font-medium">
-              <Database className="w-4 h-4 text-neutral-400" />
+        <InteractiveCard className="flex flex-col">
+          <div className="flex items-center gap-3 mb-2">
+            <Database className="w-5 h-5 text-[var(--color-text-secondary)]" />
+            <h3 className="text-base font-medium text-[var(--color-text-primary)]">
               Cache de Sistema
-            </CardTitle>
-            <CardDescription className="text-neutral-500 text-sm">
-              Limpar cache do sistema
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-neutral-400 text-sm">Otimizar cache para melhor desempenho</p>
-          </CardContent>
-          <CardFooter>
-            <Button>Limpar Cache</Button>
-          </CardFooter>
-        </Card>
+            </h3>
+          </div>
+          <p className="text-sm text-[var(--color-text-tertiary)] mb-4">
+            Limpar cache do sistema
+          </p>
+          <p className="text-sm text-[var(--color-text-secondary)] mb-6 flex-1">
+            Otimizar cache para melhor desempenho
+          </p>
+          <AnimatedButton
+            variant="primary"
+            size="md"
+            className="w-full"
+          >
+            Limpar Cache
+          </AnimatedButton>
+        </InteractiveCard>
       </div>
     </motion.div>
   );

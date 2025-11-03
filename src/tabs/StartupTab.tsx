@@ -1,56 +1,109 @@
 import { motion } from 'framer-motion';
 import { Power, Clock } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { InteractiveCard } from '@/components/enhanced/InteractiveCard';
+import { AnimatedButton } from '@/components/enhanced/AnimatedButton';
+import StatDisplay from '@/components/enhanced/StatDisplay';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+
+// Page transition variants for Framer Motion
+const getPageVariants = (shouldReduceMotion: boolean) => ({
+  initial: { opacity: shouldReduceMotion ? 1 : 0, y: shouldReduceMotion ? 0 : 20 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: shouldReduceMotion ? 0 : 0.3 }
+  },
+  exit: {
+    opacity: shouldReduceMotion ? 1 : 0,
+    y: shouldReduceMotion ? 0 : -20,
+    transition: { duration: shouldReduceMotion ? 0 : 0.2 }
+  }
+});
 
 export default function StartupTab() {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.2 }}
-      className="space-y-6 md:space-y-8"
+      variants={getPageVariants(shouldReduceMotion)}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="space-y-[var(--spacing-lg)] lg:space-y-[var(--spacing-xl)]"
     >
-      <h2 className="text-xl md:text-2xl font-medium text-neutral-200 tracking-tight">Gerenciamento de Inicialização</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+      <h2 className="text-xl lg:text-2xl font-medium text-[var(--color-text-primary)] tracking-tight">
+        Gerenciamento de Inicialização
+      </h2>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-5 transition-all duration-[var(--transition-base)]">
         {/* Programas de Inicialização Card */}
-        <Card className="bg-[#141414] border-[#1f1f1f] hover:border-[#2a2a2a]">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3 text-neutral-200 text-base font-medium">
-              <Power className="w-4 h-4 text-neutral-400" />
+        <InteractiveCard className="flex flex-col">
+          <div className="flex items-center gap-3 mb-[var(--spacing-sm)]">
+            <Power className="w-5 h-5 text-[var(--color-text-secondary)]" />
+            <h3 className="text-base font-medium text-[var(--color-text-primary)]">
               Programas de Inicialização
-            </CardTitle>
-            <CardDescription className="text-neutral-500 text-sm">
-              Gerenciar apps que iniciam com o Windows
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-neutral-400 text-sm">12 programas habilitados</p>
-          </CardContent>
-          <CardFooter>
-            <Button>Gerenciar</Button>
-          </CardFooter>
-        </Card>
+            </h3>
+          </div>
+          
+          <p className="text-sm text-[var(--color-text-tertiary)] mb-[var(--spacing-md)]">
+            Gerenciar apps que iniciam com o Windows
+          </p>
+          
+          <div className="mb-[var(--spacing-lg)]">
+            <StatDisplay
+              label="Programas habilitados"
+              value={12}
+              size="md"
+              mono={true}
+            />
+          </div>
+          
+          <div className="mt-auto">
+            <AnimatedButton
+              variant="secondary"
+              size="md"
+              className="w-full"
+              icon={<Power className="w-4 h-4" />}
+            >
+              Gerenciar
+            </AnimatedButton>
+          </div>
+        </InteractiveCard>
 
         {/* Tempo de Inicialização Card */}
-        <Card className="bg-[#141414] border-[#1f1f1f] hover:border-[#2a2a2a]">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3 text-neutral-200 text-base font-medium">
-              <Clock className="w-4 h-4 text-neutral-400" />
+        <InteractiveCard className="flex flex-col">
+          <div className="flex items-center gap-3 mb-[var(--spacing-sm)]">
+            <Clock className="w-5 h-5 text-[var(--color-text-secondary)]" />
+            <h3 className="text-base font-medium text-[var(--color-text-primary)]">
               Tempo de Inicialização
-            </CardTitle>
-            <CardDescription className="text-neutral-500 text-sm">
-              Análise do tempo de boot
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-neutral-400 text-sm">Último boot: 28 segundos</p>
-          </CardContent>
-          <CardFooter>
-            <Button>Ver Detalhes</Button>
-          </CardFooter>
-        </Card>
+            </h3>
+          </div>
+          
+          <p className="text-sm text-[var(--color-text-tertiary)] mb-[var(--spacing-md)]">
+            Análise do tempo de boot
+          </p>
+          
+          <div className="mb-[var(--spacing-lg)]">
+            <StatDisplay
+              label="Último boot"
+              value={28}
+              unit="segundos"
+              size="md"
+              mono={true}
+            />
+          </div>
+          
+          <div className="mt-auto">
+            <AnimatedButton
+              variant="secondary"
+              size="md"
+              className="w-full"
+              icon={<Clock className="w-4 h-4" />}
+            >
+              Ver Detalhes
+            </AnimatedButton>
+          </div>
+        </InteractiveCard>
       </div>
     </motion.div>
   );

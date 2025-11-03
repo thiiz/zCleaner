@@ -1,6 +1,8 @@
 import * as React from "react"
 import { X } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/hooks/useReducedMotion"
 
 interface DialogProps {
   open?: boolean
@@ -9,36 +11,62 @@ interface DialogProps {
 }
 
 const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
-  if (!open) return null
+  const shouldReduceMotion = useReducedMotion();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div 
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm"
-        onClick={() => onOpenChange?.(false)}
-      />
-      <div className="relative z-50">
-        {children}
-      </div>
-    </div>
+    <AnimatePresence>
+      {open && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          role="dialog"
+          aria-modal="true"
+        >
+          <motion.div 
+            className="fixed inset-0 bg-black/80 backdrop-blur-[4px] will-change-opacity"
+            onClick={() => onOpenChange?.(false)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.8 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
+            aria-hidden="true"
+          />
+          <div className="relative z-50">
+            {children}
+          </div>
+        </div>
+      )}
+    </AnimatePresence>
   )
 }
 
 const DialogContent = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, children, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "relative bg-[#141414] border border-[#1f1f1f] rounded-lg shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col",
-      className
-    )}
-    {...props}
-  >
-    {children}
-  </div>
-))
+  Omit<React.HTMLAttributes<HTMLDivElement>, 'onDrag' | 'onDragStart' | 'onDragEnd' | 'onAnimationStart' | 'onAnimationEnd'>
+>(({ className, children, ...props }, ref) => {
+  const shouldReduceMotion = useReducedMotion();
+
+  return (
+    <motion.div
+      ref={ref}
+      className={cn(
+        "relative bg-[#141414] border border-[#1f1f1f] rounded-lg shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col will-change-transform-opacity",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring-color)] focus-visible:ring-offset-2",
+        className
+      )}
+      initial={{ scale: shouldReduceMotion ? 1 : 0.95, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: shouldReduceMotion ? 1 : 0.95, opacity: 0 }}
+      transition={{ 
+        duration: shouldReduceMotion ? 0 : 0.25,
+        ease: "easeOut"
+      }}
+      tabIndex={-1}
+      {...props}
+    >
+      {children}
+    </motion.div>
+  );
+})
 DialogContent.displayName = "DialogContent"
 
 const DialogHeader = ({
@@ -103,12 +131,13 @@ const DialogClose = React.forwardRef<
   <button
     ref={ref}
     className={cn(
-      "absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:ring-offset-2 disabled:pointer-events-none",
+      "absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring-color)] focus-visible:ring-offset-2 disabled:pointer-events-none will-change-opacity",
       className
     )}
+    aria-label="Close dialog"
     {...props}
   >
-    <X className="h-4 w-4 text-neutral-400" />
+    <X className="h-4 w-4 text-neutral-400" aria-hidden="true" />
     <span className="sr-only">Close</span>
   </button>
 ))

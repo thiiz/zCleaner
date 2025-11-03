@@ -25,8 +25,22 @@ const tabs: Tab[] = [
 
 export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   return (
-    <aside className="w-56 md:w-64 bg-[#0a0a0a] border-r border-[#1a1a1a] p-4 md:p-5 flex-shrink-0">
-      <nav className="space-y-1.5">
+    <aside 
+      className="flex-shrink-0 border-r p-4 lg:p-5 bg-primary border-subtle transition-all duration-[var(--transition-base)]"
+      role="navigation"
+      aria-label="Main navigation"
+      style={{
+        width: 'var(--sidebar-width-sm)',
+      }}
+    >
+      <style>{`
+        @media (min-width: 1024px) {
+          aside {
+            width: var(--sidebar-width-md);
+          }
+        }
+      `}</style>
+      <nav className="space-y-1.5" role="tablist">
         {tabs.map(tab => (
           <TabButton
             key={tab.id}

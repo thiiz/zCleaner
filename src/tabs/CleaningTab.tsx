@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Trash2, Trash, FolderOpen, Loader2, CheckCircle2, ChevronDown, ChevronRight } from 'lucide-react';
+import { Trash2, Trash, FolderOpen, CheckCircle2, ChevronRight } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Progress } from '@/components/ui/progress';
+import { InteractiveCard } from '@/components/enhanced/InteractiveCard';
+import { AnimatedButton } from '@/components/enhanced/AnimatedButton';
+import { LoadingState } from '@/components/enhanced/LoadingState';
+import StatDisplay from '@/components/enhanced/StatDisplay';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+
 
 interface TempFile {
   path: string;
@@ -21,7 +24,23 @@ interface ScanResult {
   total_size: number;
 }
 
+// Page transition variants for Framer Motion
+const getPageVariants = (shouldReduceMotion: boolean) => ({
+  initial: { opacity: shouldReduceMotion ? 1 : 0, y: shouldReduceMotion ? 0 : 20 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: shouldReduceMotion ? 0 : 0.3 }
+  },
+  exit: {
+    opacity: shouldReduceMotion ? 1 : 0,
+    y: shouldReduceMotion ? 0 : -20,
+    transition: { duration: shouldReduceMotion ? 0 : 0.2 }
+  }
+});
+
 export default function CleaningTab() {
+  const shouldReduceMotion = useReducedMotion();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -151,81 +170,89 @@ export default function CleaningTab() {
   return (
     <>
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        transition={{ duration: 0.2 }}
-        className="space-y-6 md:space-y-8"
+        variants={getPageVariants(shouldReduceMotion)}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        className="space-y-6 lg:space-y-8"
       >
-        <h2 className="text-xl md:text-2xl font-medium text-neutral-200 tracking-tight">Limpeza do Sistema</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+        <h2 className="text-xl lg:text-2xl font-medium text-[var(--color-text-primary)] tracking-tight">
+          Limpeza do Sistema
+        </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-5 transition-all duration-[var(--transition-base)]">
           {/* Arquivos Temporários Card */}
-          <Card className="bg-[#141414] border-[#1f1f1f] hover:border-[#2a2a2a] transition-colors">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-neutral-200 text-base font-medium">
-                <Trash2 className="w-4 h-4 text-neutral-400" />
+          <InteractiveCard className="flex flex-col">
+            <div className="flex items-center gap-3 mb-2">
+              <Trash2 className="w-5 h-5 text-[var(--color-text-secondary)]" />
+              <h3 className="text-base font-medium text-[var(--color-text-primary)]">
                 Arquivos Temporários
-              </CardTitle>
-              <CardDescription className="text-neutral-500 text-sm">
-                Limpar cache e arquivos temporários do sistema
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-neutral-400 text-sm">
-                Escaneie para ver quanto espaço pode ser liberado
-              </p>
-            </CardContent>
-            <CardFooter>
-              <Button onClick={handleScan} disabled={isScanning}>
-                {isScanning ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Escaneando...
-                  </>
-                ) : (
-                  'Escanear Agora'
-                )}
-              </Button>
-            </CardFooter>
-          </Card>
+              </h3>
+            </div>
+            <p className="text-sm text-[var(--color-text-tertiary)] mb-4">
+              Limpar cache e arquivos temporários do sistema
+            </p>
+            <p className="text-sm text-[var(--color-text-secondary)] mb-6 flex-1">
+              Escaneie para ver quanto espaço pode ser liberado
+            </p>
+            <AnimatedButton
+              onClick={handleScan}
+              disabled={isScanning}
+              loading={isScanning}
+              variant="primary"
+              size="md"
+              className="w-full"
+            >
+              {isScanning ? 'Escaneando...' : 'Escanear Agora'}
+            </AnimatedButton>
+          </InteractiveCard>
 
           {/* Lixeira Card */}
-          <Card className="bg-[#141414] border-[#1f1f1f] hover:border-[#2a2a2a] transition-colors">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-neutral-200 text-base font-medium">
-                <Trash className="w-4 h-4 text-neutral-400" />
+          <InteractiveCard className="flex flex-col">
+            <div className="flex items-center gap-3 mb-2">
+              <Trash className="w-5 h-5 text-[var(--color-text-secondary)]" />
+              <h3 className="text-base font-medium text-[var(--color-text-primary)]">
                 Lixeira
-              </CardTitle>
-              <CardDescription className="text-neutral-500 text-sm">
-                Esvaziar lixeira do sistema
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-neutral-400 text-sm">Em breve</p>
-            </CardContent>
-            <CardFooter>
-              <Button disabled>Esvaziar</Button>
-            </CardFooter>
-          </Card>
+              </h3>
+            </div>
+            <p className="text-sm text-[var(--color-text-tertiary)] mb-4">
+              Esvaziar lixeira do sistema
+            </p>
+            <p className="text-sm text-[var(--color-text-secondary)] mb-6 flex-1">
+              Em breve
+            </p>
+            <AnimatedButton
+              disabled
+              variant="secondary"
+              size="md"
+              className="w-full"
+            >
+              Esvaziar
+            </AnimatedButton>
+          </InteractiveCard>
 
           {/* Downloads Antigos Card */}
-          <Card className="bg-[#141414] border-[#1f1f1f] hover:border-[#2a2a2a] transition-colors">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-neutral-200 text-base font-medium">
-                <FolderOpen className="w-4 h-4 text-neutral-400" />
+          <InteractiveCard className="flex flex-col">
+            <div className="flex items-center gap-3 mb-2">
+              <FolderOpen className="w-5 h-5 text-[var(--color-text-secondary)]" />
+              <h3 className="text-base font-medium text-[var(--color-text-primary)]">
                 Downloads Antigos
-              </CardTitle>
-              <CardDescription className="text-neutral-500 text-sm">
-                Remover arquivos de download antigos
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-neutral-400 text-sm">Em breve</p>
-            </CardContent>
-            <CardFooter>
-              <Button disabled>Analisar</Button>
-            </CardFooter>
-          </Card>
+              </h3>
+            </div>
+            <p className="text-sm text-[var(--color-text-tertiary)] mb-4">
+              Remover arquivos de download antigos
+            </p>
+            <p className="text-sm text-[var(--color-text-secondary)] mb-6 flex-1">
+              Em breve
+            </p>
+            <AnimatedButton
+              disabled
+              variant="secondary"
+              size="md"
+              className="w-full"
+            >
+              Analisar
+            </AnimatedButton>
+          </InteractiveCard>
         </div>
       </motion.div>
 
@@ -246,34 +273,45 @@ export default function CleaningTab() {
           </DialogHeader>
 
           {isScanning ? (
-            <div className="flex flex-col items-center justify-center py-12 space-y-4">
-              <Loader2 className="w-12 h-12 text-neutral-400 animate-spin" />
-              <p className="text-neutral-400 text-sm">Escaneando arquivos temporários...</p>
+            <div className="flex flex-col items-center justify-center py-12">
+              <LoadingState
+                type="spinner"
+                size="lg"
+                message="Escaneando arquivos temporários..."
+              />
             </div>
           ) : deleteComplete ? (
-            <div className="flex flex-col items-center justify-center py-12 space-y-4">
-              <CheckCircle2 className="w-16 h-16 text-green-500" />
-              <p className="text-neutral-200 text-lg font-medium">
-                {formatBytes(deletedSize)} liberados
-              </p>
-            </div>
+            <motion.div
+              initial={{ opacity: shouldReduceMotion ? 1 : 0, scale: shouldReduceMotion ? 1 : 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: shouldReduceMotion ? 0 : 0.3 }}
+              className="flex flex-col items-center justify-center py-12 space-y-6"
+            >
+              <CheckCircle2 className="w-16 h-16 text-[var(--color-success)]" />
+              <StatDisplay
+                label="Espaço Liberado"
+                value={formatBytes(deletedSize)}
+                size="lg"
+                mono={true}
+              />
+            </motion.div>
           ) : (
             <>
-              <div className="px-6 pt-4 pb-2 flex items-center justify-between border-b border-[#1f1f1f]">
-                <p className="text-neutral-400 text-xs">
+              <div className="px-6 pt-4 pb-2 flex items-center justify-between border-b border-[var(--color-border-default)]">
+                <p className="text-[var(--color-text-secondary)] text-xs">
                   {Object.keys(groupedFiles).length} categorias encontradas
                 </p>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setCollapsedCategories(new Set())}
-                    className="text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
+                    className="text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors duration-[var(--transition-fast)]"
                   >
                     Expandir Todas
                   </button>
-                  <span className="text-neutral-600">|</span>
+                  <span className="text-[var(--color-border-hover)]">|</span>
                   <button
                     onClick={() => setCollapsedCategories(new Set(Object.keys(groupedFiles)))}
-                    className="text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
+                    className="text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors duration-[var(--transition-fast)]"
                   >
                     Colapsar Todas
                   </button>
@@ -287,54 +325,61 @@ export default function CleaningTab() {
 
                   return (
                     <div key={category} className="space-y-2">
-                      <div className="flex items-center gap-2 p-3 bg-[#0f0f0f] rounded-lg border border-[#1f1f1f] hover:border-[#2a2a2a] transition-colors">
-                        <button
+                      <div className="flex items-center gap-2 p-3 rounded-lg border border-[var(--color-border-default)] hover:border-[var(--color-border-hover)] transition-colors duration-[var(--transition-base)]">
+                        <motion.button
                           onClick={() => toggleCollapse(category)}
-                          className="p-1 hover:bg-[#1f1f1f] rounded transition-colors"
+                          className="p-1 hover:bg-[var(--color-bg-elevated)] rounded transition-colors duration-[var(--transition-fast)]"
                           aria-label={isCollapsed ? 'Expandir categoria' : 'Colapsar categoria'}
+                          whileHover={{ scale: shouldReduceMotion ? 1 : 1.05 }}
+                          whileTap={{ scale: shouldReduceMotion ? 1 : 0.95 }}
                         >
-                          {isCollapsed ? (
-                            <ChevronRight className="w-4 h-4 text-neutral-400" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4 text-neutral-400" />
-                          )}
-                        </button>
+                          <motion.div
+                            animate={{ rotate: isCollapsed ? 0 : 90 }}
+                            transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
+                          >
+                            <ChevronRight className="w-4 h-4 text-[var(--color-text-secondary)]" />
+                          </motion.div>
+                        </motion.button>
                         <label className="flex items-center gap-3 cursor-pointer flex-1">
                           <Checkbox
                             checked={allSelected}
                             onCheckedChange={() => toggleCategory(category)}
                           />
                           <div className="flex-1">
-                            <p className="text-neutral-200 text-sm font-medium">{category}</p>
-                            <p className="text-neutral-500 text-xs">{files.length} itens</p>
+                            <p className="text-[var(--color-text-primary)] text-sm font-medium">{category}</p>
+                            <p className="text-[var(--color-text-tertiary)] text-xs">{files.length} itens</p>
                           </div>
-                          <span className="text-neutral-400 text-sm font-mono">
-                            {formatBytes(categorySize)}
-                          </span>
+                          <StatDisplay
+                            label=""
+                            value={formatBytes(categorySize)}
+                            size="sm"
+                            mono={true}
+                            className="items-end"
+                          />
                         </label>
                       </div>
 
                       {!isCollapsed && (
                         <motion.div
-                          initial={{ opacity: 0, height: 0 }}
+                          initial={{ opacity: shouldReduceMotion ? 1 : 0, height: shouldReduceMotion ? 'auto' : 0 }}
                           animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.2 }}
+                          exit={{ opacity: shouldReduceMotion ? 1 : 0, height: shouldReduceMotion ? 'auto' : 0 }}
+                          transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
                           className="ml-7 space-y-1 overflow-hidden"
                         >
                           {files.map((file) => (
                             <label
                               key={file.path}
-                              className="flex items-center gap-3 p-2 hover:bg-[#0f0f0f] rounded cursor-pointer transition-colors"
+                              className="flex items-center gap-3 p-2 hover:bg-[#0f0f0f] rounded cursor-pointer transition-colors duration-150"
                             >
                               <Checkbox
                                 checked={selectedFiles.has(file.path)}
                                 onCheckedChange={() => toggleFile(file.path)}
                               />
                               <div className="flex-1 min-w-0">
-                                <p className="text-neutral-300 text-xs truncate">{file.name}</p>
+                                <p className="text-[var(--color-text-secondary)] text-xs truncate">{file.name}</p>
                               </div>
-                              <span className="text-neutral-500 text-xs font-mono">
+                              <span className="text-[var(--color-text-tertiary)] text-xs font-mono">
                                 {formatBytes(file.size)}
                               </span>
                             </label>
@@ -347,12 +392,13 @@ export default function CleaningTab() {
               </div>
 
               {isDeleting && (
-                <div className="px-6 py-4 space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-neutral-400">Deletando arquivos...</span>
-                    <span className="text-neutral-300 font-mono">{deleteProgress}%</span>
-                  </div>
-                  <Progress value={deleteProgress} />
+                <div className="px-6 py-4">
+                  <LoadingState
+                    type="progress"
+                    progress={deleteProgress}
+                    message="Deletando arquivos..."
+                    size="md"
+                  />
                 </div>
               )}
             </>
@@ -361,7 +407,7 @@ export default function CleaningTab() {
           {!isScanning && (
             <DialogFooter>
               {deleteComplete ? (
-                <Button
+                <AnimatedButton
                   onClick={() => {
                     setIsDialogOpen(false);
                     setScanResult(null);
@@ -370,45 +416,44 @@ export default function CleaningTab() {
                     setDeleteComplete(false);
                     setDeletedSize(0);
                   }}
+                  variant="primary"
+                  size="md"
                   className="w-full"
                 >
                   Fechar
-                </Button>
+                </AnimatedButton>
               ) : (
-                <div className="flex items-center justify-between w-full">
-                  <div className="text-sm">
-                    <span className="text-neutral-400">Selecionado: </span>
-                    <span className="text-neutral-200 font-medium">
-                      {formatBytes(getSelectedSize())}
-                    </span>
-                    <span className="text-neutral-500 ml-2">
-                      ({selectedFiles.size} itens)
+                <div className="flex items-center justify-between w-full gap-4">
+                  <div className="flex flex-col gap-1">
+                    <StatDisplay
+                      label="Selecionado"
+                      value={formatBytes(getSelectedSize())}
+                      size="sm"
+                      mono={true}
+                    />
+                    <span className="text-[var(--color-text-tertiary)] text-xs">
+                      {selectedFiles.size} {selectedFiles.size === 1 ? 'item' : 'itens'}
                     </span>
                   </div>
                   <div className="flex gap-3">
-                    <Button
+                    <AnimatedButton
                       variant="outline"
+                      size="md"
                       onClick={() => setIsDialogOpen(false)}
                       disabled={isDeleting}
                     >
                       Cancelar
-                    </Button>
-                    <Button
+                    </AnimatedButton>
+                    <AnimatedButton
+                      variant="primary"
+                      size="md"
                       onClick={handleDelete}
                       disabled={selectedFiles.size === 0 || isDeleting}
+                      loading={isDeleting}
+                      icon={!isDeleting ? <Trash2 className="w-4 h-4" /> : undefined}
                     >
-                      {isDeleting ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Deletando...
-                        </>
-                      ) : (
-                        <>
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Deletar Selecionados
-                        </>
-                      )}
-                    </Button>
+                      {isDeleting ? 'Deletando...' : 'Deletar Selecionados'}
+                    </AnimatedButton>
                   </div>
                 </div>
               )}

@@ -8,28 +8,38 @@ import PerformanceTab from './tabs/PerformanceTab';
 import StartupTab from './tabs/StartupTab';
 import PowerTab from './tabs/PowerTab';
 import SystemTab from './tabs/SystemTab';
+import { ToastProvider } from './components/enhanced/ToastContainer';
 import './App.css';
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('cleaning');
 
   return (
-    <div className="min-h-screen min-w-[800px] bg-[#0a0a0a]">
-      <TitleBar />
-      <Header />
-      <div className="flex h-[calc(100vh-112px)] min-h-[520px]">
-        <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-        <main className="flex-1 p-6 md:p-8 overflow-y-auto bg-[#0f0f0f]">
-          <AnimatePresence mode="wait">
-            {activeTab === 'cleaning' && <CleaningTab key="cleaning" />}
-            {activeTab === 'performance' && <PerformanceTab key="performance" />}
-            {activeTab === 'startup' && <StartupTab key="startup" />}
-            {activeTab === 'power' && <PowerTab key="power" />}
-            {activeTab === 'system' && <SystemTab key="system" />}
-          </AnimatePresence>
-        </main>
+    <ToastProvider position="top-right" maxToasts={3}>
+      <div className="min-h-screen min-w-[800px] bg-[#0a0a0a]">
+        <TitleBar />
+        <Header />
+        <div className="flex h-[calc(100vh-112px)] min-h-[520px]">
+          <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+          <main className="flex-1 overflow-y-auto bg-[#0f0f0f] transition-all duration-[var(--transition-base)]" style={{ padding: 'var(--padding-mobile)' }}>
+            <style>{`
+              @media (min-width: 1024px) {
+                main {
+                  padding: var(--padding-desktop);
+                }
+              }
+            `}</style>
+            <AnimatePresence mode="wait">
+              {activeTab === 'cleaning' && <CleaningTab key="cleaning" />}
+              {activeTab === 'performance' && <PerformanceTab key="performance" />}
+              {activeTab === 'startup' && <StartupTab key="startup" />}
+              {activeTab === 'power' && <PowerTab key="power" />}
+              {activeTab === 'system' && <SystemTab key="system" />}
+            </AnimatePresence>
+          </main>
+        </div>
       </div>
-    </div>
+    </ToastProvider>
   );
 }
 

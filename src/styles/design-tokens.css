@@ -1,0 +1,254 @@
+/**
+ * Design Tokens - Modern UI Refactor
+ * Centralized CSS variables for consistent styling across the application
+ */
+
+:root {
+  /* ============================================
+     Colors - Neutral Dark Palette
+     ============================================ */
+  
+  /* Background Colors */
+  --color-bg-primary: #0a0a0a;
+  --color-bg-secondary: #0f0f0f;
+  --color-bg-tertiary: #141414;
+  --color-bg-elevated: #1a1a1a;
+  
+  /* Border Colors */
+  --color-border-subtle: #1a1a1a;
+  --color-border-default: #1f1f1f;
+  --color-border-hover: #2a2a2a;
+  
+  /* Text Colors */
+  --color-text-primary: #e5e5e5;
+  --color-text-secondary: #a3a3a3;
+  --color-text-tertiary: #737373;
+  --color-text-disabled: #525252;
+  
+  /* Accent Colors */
+  --color-accent-primary: #f5f5f5;
+  --color-accent-hover: #ffffff;
+  
+  /* Status Colors */
+  --color-success: #22c55e;
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
+  --color-info: #3b82f6;
+  
+  /* ============================================
+     Spacing
+     ============================================ */
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  
+  /* ============================================
+     Border Radius
+     ============================================ */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  
+  /* ============================================
+     Transitions
+     ============================================ */
+  --transition-fast: 150ms;
+  --transition-base: 200ms;
+  --transition-slow: 300ms;
+  --transition-slower: 400ms;
+  
+  /* Easing Functions */
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  
+  /* ============================================
+     Shadows
+     ============================================ */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.15);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.2);
+  
+  /* Elevation Shadows (for hover states) */
+  --shadow-elevation-sm: 0 2px 4px 0 rgb(0 0 0 / 0.1);
+  --shadow-elevation-md: 0 8px 12px -2px rgb(0 0 0 / 0.15);
+  --shadow-elevation-lg: 0 16px 24px -4px rgb(0 0 0 / 0.2);
+  
+  /* ============================================
+     Typography
+     ============================================ */
+  
+  /* Font Sizes */
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-base: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+  --font-size-3xl: 30px;
+  --font-size-4xl: 36px;
+  
+  /* Font Weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* Line Heights */
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+  
+  /* Letter Spacing */
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.025em;
+  
+  /* ============================================
+     Z-Index Layers
+     ============================================ */
+  --z-base: 0;
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-fixed: 1200;
+  --z-modal-backdrop: 1300;
+  --z-modal: 1400;
+  --z-popover: 1500;
+  --z-tooltip: 1600;
+  
+  /* ============================================
+     Layout
+     ============================================ */
+  --sidebar-width-sm: 200px;
+  --sidebar-width-md: 240px;
+  --header-height: 60px;
+  --titlebar-height: 32px;
+  
+  /* Responsive Padding */
+  --padding-mobile: 24px;
+  --padding-desktop: 32px;
+  
+  /* Grid Gaps */
+  --grid-gap-sm: 12px;
+  --grid-gap-md: 16px;
+  --grid-gap-lg: 20px;
+  --grid-gap-xl: 24px;
+  
+  /* Breakpoints (for reference in media queries) */
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1440px;
+  
+  /* ============================================
+     Interactive States
+     ============================================ */
+  --opacity-disabled: 0.5;
+  --opacity-hover: 0.8;
+  --opacity-active: 0.9;
+  
+  /* Scale Transforms */
+  --scale-hover: 1.02;
+  --scale-active: 0.98;
+  --scale-button-active: 0.98;
+  
+  /* ============================================
+     Focus Indicators (Accessibility)
+     ============================================ */
+  --focus-ring-width: 2px;
+  --focus-ring-color: #f5f5f5;
+  --focus-ring-offset: 2px;
+  --focus-ring-style: solid;
+  
+  /* ============================================
+     Performance Optimizations
+     ============================================ */
+  /* will-change hints for animated properties */
+  --will-change-transform: transform;
+  --will-change-opacity: opacity;
+  --will-change-transform-opacity: transform, opacity;
+  
+  /* ============================================
+     Animations
+     ============================================ */
+  --animation-duration-fast: 150ms;
+  --animation-duration-base: 200ms;
+  --animation-duration-slow: 300ms;
+  --animation-duration-slower: 400ms;
+  
+  /* Rotation */
+  --rotation-chevron: 90deg;
+  --rotation-full: 360deg;
+}
+
+/* ============================================
+   Utility Classes for Design Tokens
+   ============================================ */
+
+/* Background utilities */
+.bg-primary { background-color: var(--color-bg-primary); }
+.bg-secondary { background-color: var(--color-bg-secondary); }
+.bg-tertiary { background-color: var(--color-bg-tertiary); }
+.bg-elevated { background-color: var(--color-bg-elevated); }
+
+/* Text utilities */
+.text-primary { color: var(--color-text-primary); }
+.text-secondary { color: var(--color-text-secondary); }
+.text-tertiary { color: var(--color-text-tertiary); }
+.text-disabled { color: var(--color-text-disabled); }
+
+/* Border utilities */
+.border-subtle { border-color: var(--color-border-subtle); }
+.border-default { border-color: var(--color-border-default); }
+.border-hover { border-color: var(--color-border-hover); }
+
+/* Status utilities */
+.text-success { color: var(--color-success); }
+.text-error { color: var(--color-error); }
+.text-warning { color: var(--color-warning); }
+.text-info { color: var(--color-info); }
+
+/* ============================================
+   Accessibility - Focus Indicators
+   ============================================ */
+
+/* Standard focus ring for interactive elements */
+.focus-ring {
+  outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* Focus visible (only on keyboard navigation) */
+.focus-visible-ring:focus-visible {
+  outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* ============================================
+   Performance Optimizations
+   ============================================ */
+
+/* Apply will-change for elements with transform animations */
+.will-change-transform {
+  will-change: var(--will-change-transform);
+}
+
+/* Apply will-change for elements with opacity animations */
+.will-change-opacity {
+  will-change: var(--will-change-opacity);
+}
+
+/* Apply will-change for elements with both transform and opacity animations */
+.will-change-transform-opacity {
+  will-change: var(--will-change-transform-opacity);
+}
+
+/* Remove will-change after animation completes (use with JS) */
+.will-change-auto {
+  will-change: auto;
+}

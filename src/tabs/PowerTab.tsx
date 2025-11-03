@@ -1,56 +1,90 @@
 import { motion } from 'framer-motion';
 import { Zap, BatteryCharging } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { InteractiveCard } from '@/components/enhanced/InteractiveCard';
+import { AnimatedButton } from '@/components/enhanced/AnimatedButton';
+import StatDisplay from '@/components/enhanced/StatDisplay';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+
+// Page transition variants for Framer Motion
+const getPageVariants = (shouldReduceMotion: boolean) => ({
+  initial: { opacity: shouldReduceMotion ? 1 : 0, y: shouldReduceMotion ? 0 : 20 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: shouldReduceMotion ? 0 : 0.3 }
+  },
+  exit: {
+    opacity: shouldReduceMotion ? 1 : 0,
+    y: shouldReduceMotion ? 0 : -20,
+    transition: { duration: shouldReduceMotion ? 0 : 0.2 }
+  }
+});
 
 export default function PowerTab() {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.2 }}
-      className="space-y-6 md:space-y-8"
+      variants={getPageVariants(shouldReduceMotion)}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="space-y-6 lg:space-y-8"
     >
-      <h2 className="text-xl md:text-2xl font-medium text-neutral-200 tracking-tight">Configurações de Energia</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+      <h2 className="text-xl lg:text-2xl font-medium text-[var(--color-text-primary)] tracking-tight">
+        Configurações de Energia
+      </h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-5 transition-all duration-[var(--transition-base)]">
         {/* Plano de Energia Card */}
-        <Card className="bg-[#141414] border-[#1f1f1f] hover:border-[#2a2a2a]">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3 text-neutral-200 text-base font-medium">
-              <Zap className="w-4 h-4 text-neutral-400" />
+        <InteractiveCard className="flex flex-col">
+          <div className="flex items-center gap-3 mb-2">
+            <Zap className="w-5 h-5 text-[var(--color-text-secondary)]" />
+            <h3 className="text-base font-medium text-[var(--color-text-primary)]">
               Plano de Energia
-            </CardTitle>
-            <CardDescription className="text-neutral-500 text-sm">
-              Configurar perfil de energia
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-neutral-400 text-sm">Plano atual: Balanceado</p>
-          </CardContent>
-          <CardFooter>
-            <Button>Alterar Plano</Button>
-          </CardFooter>
-        </Card>
+            </h3>
+          </div>
+          <p className="text-sm text-[var(--color-text-tertiary)] mb-4">
+            Configurar perfil de energia
+          </p>
+          <div className="mb-6 flex-1">
+            <StatDisplay
+              label="Plano Atual"
+              value="Balanceado"
+              size="sm"
+              mono={false}
+            />
+          </div>
+          <AnimatedButton
+            variant="primary"
+            size="md"
+            className="w-full"
+          >
+            Alterar Plano
+          </AnimatedButton>
+        </InteractiveCard>
 
         {/* Economia de Bateria Card */}
-        <Card className="bg-[#141414] border-[#1f1f1f] hover:border-[#2a2a2a]">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3 text-neutral-200 text-base font-medium">
-              <BatteryCharging className="w-4 h-4 text-neutral-400" />
+        <InteractiveCard className="flex flex-col">
+          <div className="flex items-center gap-3 mb-2">
+            <BatteryCharging className="w-5 h-5 text-[var(--color-text-secondary)]" />
+            <h3 className="text-base font-medium text-[var(--color-text-primary)]">
               Economia de Bateria
-            </CardTitle>
-            <CardDescription className="text-neutral-500 text-sm">
-              Ativar modo de economia
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-neutral-400 text-sm">Prolongar duração da bateria</p>
-          </CardContent>
-          <CardFooter>
-            <Button>Ativar</Button>
-          </CardFooter>
-        </Card>
+            </h3>
+          </div>
+          <p className="text-sm text-[var(--color-text-tertiary)] mb-4">
+            Ativar modo de economia
+          </p>
+          <p className="text-sm text-[var(--color-text-secondary)] mb-6 flex-1">
+            Prolongar duração da bateria
+          </p>
+          <AnimatedButton
+            variant="primary"
+            size="md"
+            className="w-full"
+          >
+            Ativar
+          </AnimatedButton>
+        </InteractiveCard>
       </div>
     </motion.div>
   );

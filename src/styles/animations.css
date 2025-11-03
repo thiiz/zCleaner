@@ -1,0 +1,511 @@
+/**
+ * Animations - Modern UI Refactor
+ * Reusable CSS animations and keyframes for consistent motion design
+ */
+
+/* ============================================
+   Keyframe Definitions
+   ============================================ */
+
+/* Fade Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Scale Animations */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes scaleOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes scaleBounce {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Slide Animations */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+@keyframes slideOutLeft {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+}
+
+/* Pulse Animation */
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes pulseScale {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Spin Animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Bounce Animation */
+@keyframes bounce {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+
+  70% {
+    transform: scale(0.9);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Shake Animation (for errors) */
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-4px);
+  }
+
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+/* Shimmer Animation (for skeleton loaders) */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+/* Progress Animation */
+@keyframes progress {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Rotate Chevron (for accordions) */
+@keyframes rotateChevron {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(90deg);
+  }
+}
+
+/* Glow Animation */
+@keyframes glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 5px rgba(245, 245, 245, 0.2);
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(245, 245, 245, 0.4);
+  }
+}
+
+/* ============================================
+   Animation Utility Classes
+   ============================================ */
+
+/* Fade Animations */
+.animate-fade-in {
+  animation: fadeIn var(--transition-slow) var(--ease-out) forwards;
+}
+
+.animate-fade-out {
+  animation: fadeOut var(--transition-base) var(--ease-in) forwards;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp var(--transition-slow) var(--ease-out) forwards;
+}
+
+.animate-fade-in-down {
+  animation: fadeInDown var(--transition-slow) var(--ease-out) forwards;
+}
+
+/* Scale Animations */
+.animate-scale-in {
+  animation: scaleIn 250ms var(--ease-out) forwards;
+}
+
+.animate-scale-out {
+  animation: scaleOut var(--transition-base) var(--ease-in) forwards;
+}
+
+.animate-scale-bounce {
+  animation: scaleBounce var(--transition-slow) var(--ease-bounce);
+}
+
+/* Slide Animations */
+.animate-slide-in-right {
+  animation: slideInRight var(--transition-slow) var(--ease-out) forwards;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft var(--transition-slow) var(--ease-out) forwards;
+}
+
+.animate-slide-out-right {
+  animation: slideOutRight var(--transition-base) var(--ease-in) forwards;
+}
+
+.animate-slide-out-left {
+  animation: slideOutLeft var(--transition-base) var(--ease-in) forwards;
+}
+
+/* Pulse Animation */
+.animate-pulse {
+  animation: pulse 2s var(--ease-in-out) infinite;
+}
+
+.animate-pulse-scale {
+  animation: pulseScale 2s var(--ease-in-out) infinite;
+}
+
+/* Spin Animation */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-spin-slow {
+  animation: spin 2s linear infinite;
+}
+
+/* Bounce Animation */
+.animate-bounce {
+  animation: bounce 1s var(--ease-in-out) infinite;
+}
+
+.animate-bounce-in {
+  animation: bounceIn var(--transition-slow) var(--ease-bounce) forwards;
+}
+
+/* Shake Animation */
+.animate-shake {
+  animation: shake var(--transition-slower) var(--ease-in-out);
+}
+
+/* Shimmer Animation */
+.animate-shimmer {
+  background: linear-gradient(90deg,
+      var(--color-bg-tertiary) 0%,
+      var(--color-bg-elevated) 50%,
+      var(--color-bg-tertiary) 100%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+/* Progress Animation */
+.animate-progress {
+  animation: progress 1.5s ease-in-out infinite;
+}
+
+/* Glow Animation */
+.animate-glow {
+  animation: glow 2s var(--ease-in-out) infinite;
+}
+
+/* ============================================
+   Hover & Interactive Animations
+   ============================================ */
+
+/* Hover Elevation */
+.hover-elevate {
+  transition: transform var(--transition-base) var(--ease-out),
+    box-shadow var(--transition-base) var(--ease-out);
+}
+
+.hover-elevate:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-elevation-md);
+}
+
+/* Hover Scale */
+.hover-scale {
+  transition: transform var(--transition-fast) var(--ease-out);
+}
+
+.hover-scale:hover {
+  transform: scale(var(--scale-hover));
+}
+
+/* Hover Brightness */
+.hover-brightness {
+  transition: filter var(--transition-fast) var(--ease-out);
+}
+
+.hover-brightness:hover {
+  filter: brightness(1.1);
+}
+
+/* Active Scale */
+.active-scale:active {
+  transform: scale(var(--scale-active));
+}
+
+/* Smooth Transitions */
+.transition-all {
+  transition: all var(--transition-base) var(--ease-in-out);
+}
+
+.transition-colors {
+  transition: color var(--transition-base) var(--ease-in-out),
+    background-color var(--transition-base) var(--ease-in-out),
+    border-color var(--transition-base) var(--ease-in-out);
+}
+
+.transition-transform {
+  transition: transform var(--transition-base) var(--ease-out);
+}
+
+.transition-opacity {
+  transition: opacity var(--transition-base) var(--ease-in-out);
+}
+
+/* ============================================
+   Reduced Motion Support
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .animate-spin,
+  .animate-spin-slow,
+  .animate-pulse,
+  .animate-pulse-scale,
+  .animate-bounce {
+    animation: none !important;
+  }
+}
+
+/* ============================================
+   Loading States
+   ============================================ */
+
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-border-default);
+  border-top-color: var(--color-accent-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-spinner-sm {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+}
+
+.loading-spinner-lg {
+  width: 24px;
+  height: 24px;
+  border-width: 3px;
+}
+
+/* Skeleton Loader */
+.skeleton {
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg,
+      transparent 0%,
+      var(--color-bg-elevated) 50%,
+      transparent 100%);
+  animation: shimmer 2s linear infinite;
+}
