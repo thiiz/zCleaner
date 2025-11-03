@@ -25,3 +25,7 @@ serde_json = "1"
 sysinfo = "0.32"
 tokio = { version = "1", features = ["process", "time", "rt"] }
 
+[patch.crates-io]
+# Force glib to use a secure version
+glib = { version = "0.20" }
+
