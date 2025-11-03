@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
+use tauri::{Emitter, Manager};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TempFile {
@@ -114,11 +115,20 @@ fn scan_temp_files() -> Result<ScanResult, String> {
     Ok(ScanResult { files, total_size })
 }
 
-#[tauri::command]
-fn delete_temp_files(paths: Vec<String>) -> Result<u64, String> {
-    let mut deleted_size = 0u64;
+#[derive(Clone, Serialize)]
+struct DeleteProgress {
+    current: usize,
+    total: usize,
+    percentage: f32,
+    deleted_size: u64,
+}
 
-    for path_str in paths {
+#[tauri::command]
+fn delete_temp_files(app: tauri::AppHandle, paths: Vec<String>) -> Result<u64, String> {
+    let mut deleted_size = 0u64;
+    let total = paths.len();
+
+    for (index, path_str) in paths.iter().enumerate() {
         let path = PathBuf::from(&path_str);
         if path.exists() {
             if let Ok(metadata) = fs::metadata(&path) {
@@ -139,6 +149,15 @@ fn delete_temp_files(paths: Vec<String>) -> Result<u64, String> {
                 }
             }
         }
+
+        // Emit progress event
+        let progress = DeleteProgress {
+            current: index + 1,
+            total,
+            percentage: ((index + 1) as f32 / total as f32) * 100.0,
+            deleted_size,
+        };
+        let _ = app.emit("delete-progress", progress);
     }
 
     Ok(deleted_size)

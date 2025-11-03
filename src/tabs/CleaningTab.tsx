@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Trash2, Trash, FolderOpen, Loader2, CheckCircle2 } from 'lucide-react';
+import { Trash2, Trash, FolderOpen, Loader2, CheckCircle2, ChevronDown, ChevronRight } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
@@ -26,6 +27,7 @@ export default function CleaningTab() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
   const [deleteProgress, setDeleteProgress] = useState(0);
   const [deleteComplete, setDeleteComplete] = useState(false);
   const [deletedSize, setDeletedSize] = useState(0);
@@ -80,41 +82,50 @@ export default function CleaningTab() {
     setSelectedFiles(newSelected);
   };
 
+  const toggleCollapse = (category: string) => {
+    const newCollapsed = new Set(collapsedCategories);
+    if (newCollapsed.has(category)) {
+      newCollapsed.delete(category);
+    } else {
+      newCollapsed.add(category);
+    }
+    setCollapsedCategories(newCollapsed);
+  };
+
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
+
+    const setupListener = async () => {
+      unlisten = await listen<{ current: number; total: number; percentage: number; deleted_size: number }>(
+        'delete-progress',
+        (event) => {
+          setDeleteProgress(Math.round(event.payload.percentage));
+          setDeletedSize(event.payload.deleted_size);
+        }
+      );
+    };
+
+    setupListener();
+
+    return () => {
+      if (unlisten) unlisten();
+    };
+  }, []);
+
   const handleDelete = async () => {
     if (selectedFiles.size === 0) return;
 
     setIsDeleting(true);
     setDeleteProgress(0);
+    setDeletedSize(0);
 
     try {
       const pathsToDelete = Array.from(selectedFiles);
-
-      // Simulate progress (in real app, you'd get progress from backend)
-      const progressInterval = setInterval(() => {
-        setDeleteProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + 10;
-        });
-      }, 100);
-
       const result = await invoke<number>('delete_temp_files', { paths: pathsToDelete });
 
-      clearInterval(progressInterval);
       setDeleteProgress(100);
       setDeletedSize(result);
       setDeleteComplete(true);
-
-      // Reset after showing success
-      setTimeout(() => {
-        setIsDialogOpen(false);
-        setScanResult(null);
-        setSelectedFiles(new Set());
-        setDeleteProgress(0);
-        setDeleteComplete(false);
-      }, 2000);
     } catch (error) {
       console.error('Erro ao deletar:', error);
     } finally {
@@ -248,14 +259,46 @@ export default function CleaningTab() {
             </div>
           ) : (
             <>
-              <div className="overflow-y-auto max-h-[400px] px-6 py-4 space-y-4">
+              <div className="px-6 pt-4 pb-2 flex items-center justify-between border-b border-[#1f1f1f]">
+                <p className="text-neutral-400 text-xs">
+                  {Object.keys(groupedFiles).length} categorias encontradas
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setCollapsedCategories(new Set())}
+                    className="text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
+                  >
+                    Expandir Todas
+                  </button>
+                  <span className="text-neutral-600">|</span>
+                  <button
+                    onClick={() => setCollapsedCategories(new Set(Object.keys(groupedFiles)))}
+                    className="text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
+                  >
+                    Colapsar Todas
+                  </button>
+                </div>
+              </div>
+              <div className="overflow-y-auto max-h-[400px] px-6 py-4 space-y-3">
                 {Object.entries(groupedFiles).map(([category, files]) => {
                   const categorySize = files.reduce((sum, f) => sum + f.size, 0);
                   const allSelected = files.every(f => selectedFiles.has(f.path));
+                  const isCollapsed = collapsedCategories.has(category);
 
                   return (
                     <div key={category} className="space-y-2">
-                      <div className="flex items-center justify-between p-3 bg-[#0f0f0f] rounded-lg border border-[#1f1f1f]">
+                      <div className="flex items-center gap-2 p-3 bg-[#0f0f0f] rounded-lg border border-[#1f1f1f] hover:border-[#2a2a2a] transition-colors">
+                        <button
+                          onClick={() => toggleCollapse(category)}
+                          className="p-1 hover:bg-[#1f1f1f] rounded transition-colors"
+                          aria-label={isCollapsed ? 'Expandir categoria' : 'Colapsar categoria'}
+                        >
+                          {isCollapsed ? (
+                            <ChevronRight className="w-4 h-4 text-neutral-400" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4 text-neutral-400" />
+                          )}
+                        </button>
                         <label className="flex items-center gap-3 cursor-pointer flex-1">
                           <Checkbox
                             checked={allSelected}
@@ -271,25 +314,33 @@ export default function CleaningTab() {
                         </label>
                       </div>
 
-                      <div className="ml-7 space-y-1">
-                        {files.map((file) => (
-                          <label
-                            key={file.path}
-                            className="flex items-center gap-3 p-2 hover:bg-[#0f0f0f] rounded cursor-pointer transition-colors"
-                          >
-                            <Checkbox
-                              checked={selectedFiles.has(file.path)}
-                              onCheckedChange={() => toggleFile(file.path)}
-                            />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-neutral-300 text-xs truncate">{file.name}</p>
-                            </div>
-                            <span className="text-neutral-500 text-xs font-mono">
-                              {formatBytes(file.size)}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
+                      {!isCollapsed && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="ml-7 space-y-1 overflow-hidden"
+                        >
+                          {files.map((file) => (
+                            <label
+                              key={file.path}
+                              className="flex items-center gap-3 p-2 hover:bg-[#0f0f0f] rounded cursor-pointer transition-colors"
+                            >
+                              <Checkbox
+                                checked={selectedFiles.has(file.path)}
+                                onCheckedChange={() => toggleFile(file.path)}
+                              />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-neutral-300 text-xs truncate">{file.name}</p>
+                              </div>
+                              <span className="text-neutral-500 text-xs font-mono">
+                                {formatBytes(file.size)}
+                              </span>
+                            </label>
+                          ))}
+                        </motion.div>
+                      )}
                     </div>
                   );
                 })}
@@ -307,44 +358,60 @@ export default function CleaningTab() {
             </>
           )}
 
-          {!isScanning && !deleteComplete && (
+          {!isScanning && (
             <DialogFooter>
-              <div className="flex items-center justify-between w-full">
-                <div className="text-sm">
-                  <span className="text-neutral-400">Selecionado: </span>
-                  <span className="text-neutral-200 font-medium">
-                    {formatBytes(getSelectedSize())}
-                  </span>
-                  <span className="text-neutral-500 ml-2">
-                    ({selectedFiles.size} itens)
-                  </span>
+              {deleteComplete ? (
+                <Button
+                  onClick={() => {
+                    setIsDialogOpen(false);
+                    setScanResult(null);
+                    setSelectedFiles(new Set());
+                    setDeleteProgress(0);
+                    setDeleteComplete(false);
+                    setDeletedSize(0);
+                  }}
+                  className="w-full"
+                >
+                  Fechar
+                </Button>
+              ) : (
+                <div className="flex items-center justify-between w-full">
+                  <div className="text-sm">
+                    <span className="text-neutral-400">Selecionado: </span>
+                    <span className="text-neutral-200 font-medium">
+                      {formatBytes(getSelectedSize())}
+                    </span>
+                    <span className="text-neutral-500 ml-2">
+                      ({selectedFiles.size} itens)
+                    </span>
+                  </div>
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsDialogOpen(false)}
+                      disabled={isDeleting}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      onClick={handleDelete}
+                      disabled={selectedFiles.size === 0 || isDeleting}
+                    >
+                      {isDeleting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Deletando...
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Deletar Selecionados
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsDialogOpen(false)}
-                    disabled={isDeleting}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    onClick={handleDelete}
-                    disabled={selectedFiles.size === 0 || isDeleting}
-                  >
-                    {isDeleting ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Deletando...
-                      </>
-                    ) : (
-                      <>
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Deletar Selecionados
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
+              )}
             </DialogFooter>
           )}
         </DialogContent>
