@@ -61,6 +61,11 @@ export default function Dashboard() {
   const [deleteComplete, setDeleteComplete] = useState(false);
   const [deletedSize, setDeletedSize] = useState(0);
 
+  // Estados para otimização de memória
+  const [isOptimizingMemory, setIsOptimizingMemory] = useState(false);
+  const [memoryOptimized, setMemoryOptimized] = useState(false);
+  const [memoryFreed, setMemoryFreed] = useState(0);
+
   const handleScan = async () => {
     setIsScanning(true);
     setIsDialogOpen(true);
@@ -122,6 +127,43 @@ export default function Dashboard() {
       await invoke('open_folder_location', { path });
     } catch (error) {
       console.error('Erro ao abrir pasta:', error);
+    }
+  };
+
+  const handleOptimizeMemory = async () => {
+    setIsOptimizingMemory(true);
+    setMemoryOptimized(false);
+    
+    try {
+      const result = await invoke<{ 
+        before_used: number; 
+        after_used: number; 
+        freed: number; 
+        success: boolean;
+        message: string;
+      }>('optimize_memory');
+      
+      setMemoryFreed(result.freed);
+      setMemoryOptimized(result.success);
+      
+      if (!result.success) {
+        console.warn('Otimização parcial:', result.message);
+      }
+      
+      // Atualizar informações do sistema após otimização
+      setTimeout(() => {
+        refetch();
+      }, 1000);
+      
+      // Resetar estado após 5 segundos
+      setTimeout(() => {
+        setMemoryOptimized(false);
+        setMemoryFreed(0);
+      }, 5000);
+    } catch (error) {
+      console.error('Erro ao otimizar memória:', error);
+    } finally {
+      setIsOptimizingMemory(false);
     }
   };
 
@@ -192,14 +234,6 @@ export default function Dashboard() {
       >
         {/* Header com ações rápidas */}
         <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl lg:text-2xl font-medium text-[var(--color-text-primary)] tracking-tight">
-              Dashboard de Desempenho
-            </h2>
-            <p className="text-sm text-[var(--color-text-tertiary)] mt-1">
-              Monitoramento em tempo real do sistema
-            </p>
-          </div>
           <AnimatedButton
             variant="secondary"
             size="sm"
@@ -404,7 +438,7 @@ export default function Dashboard() {
             </div>
 
             <div className="space-y-3 flex-1">
-              <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors cursor-pointer group">
+              <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors group">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-purple-500/10 group-hover:bg-purple-500/20 transition-colors">
@@ -415,12 +449,22 @@ export default function Dashboard() {
                         Otimizar Memória
                       </p>
                       <p className="text-xs text-[var(--color-text-tertiary)]">
-                        Liberar RAM não utilizada
+                        {memoryOptimized 
+                          ? `${formatBytes(memoryFreed)} liberados`
+                          : 'Liberar RAM não utilizada'
+                        }
                       </p>
                     </div>
                   </div>
-                  <AnimatedButton variant="secondary" size="sm">
-                    Executar
+                  <AnimatedButton 
+                    variant={memoryOptimized ? "primary" : "secondary"}
+                    size="sm"
+                    onClick={handleOptimizeMemory}
+                    disabled={isOptimizingMemory}
+                    loading={isOptimizingMemory}
+                    icon={memoryOptimized ? <CheckCircle2 className="w-4 h-4" /> : undefined}
+                  >
+                    {memoryOptimized ? 'Concluído' : isOptimizingMemory ? 'Otimizando...' : 'Executar'}
                   </AnimatedButton>
                 </div>
               </div>
