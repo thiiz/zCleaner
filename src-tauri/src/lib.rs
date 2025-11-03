@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
-use sysinfo::{System, Disks};
+use sysinfo::{Disks, System};
 use tauri::Emitter;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -123,15 +123,197 @@ fn scan_temp_files() -> Result<ScanResult, String> {
         }
     }
 
-    // Browser caches
+    // Windows Update Downloads
+    let windows_update_path = PathBuf::from("C:\\Windows\\SoftwareDistribution\\Download");
+    if windows_update_path.exists() {
+        let root_path = windows_update_path.to_string_lossy().to_string();
+        if let Ok(entries) = fs::read_dir(&windows_update_path) {
+            for entry in entries.flatten() {
+                if let Ok(metadata) = entry.metadata() {
+                    let size = if metadata.is_file() {
+                        metadata.len()
+                    } else if metadata.is_dir() {
+                        get_dir_size(&entry.path())
+                    } else {
+                        0
+                    };
+
+                    if size > 0 {
+                        files.push(TempFile {
+                            path: entry.path().to_string_lossy().to_string(),
+                            name: entry.file_name().to_string_lossy().to_string(),
+                            size,
+                            category: "Downloads do Windows Update".to_string(),
+                            root_path: root_path.clone(),
+                        });
+                        total_size += size;
+                    }
+                }
+            }
+        }
+    }
+
+    // Windows Logs
+    let windows_logs_path = PathBuf::from("C:\\Windows\\Logs");
+    if windows_logs_path.exists() {
+        let root_path = windows_logs_path.to_string_lossy().to_string();
+        if let Ok(entries) = fs::read_dir(&windows_logs_path) {
+            for entry in entries.flatten() {
+                if let Ok(metadata) = entry.metadata() {
+                    let size = if metadata.is_file() {
+                        metadata.len()
+                    } else if metadata.is_dir() {
+                        get_dir_size(&entry.path())
+                    } else {
+                        0
+                    };
+
+                    if size > 0 {
+                        files.push(TempFile {
+                            path: entry.path().to_string_lossy().to_string(),
+                            name: entry.file_name().to_string_lossy().to_string(),
+                            size,
+                            category: "Logs do Windows".to_string(),
+                            root_path: root_path.clone(),
+                        });
+                        total_size += size;
+                    }
+                }
+            }
+        }
+    }
+
+    // Windows Minidump (crash dumps)
+    let minidump_path = PathBuf::from("C:\\Windows\\Minidump");
+    if minidump_path.exists() {
+        let root_path = minidump_path.to_string_lossy().to_string();
+        if let Ok(entries) = fs::read_dir(&minidump_path) {
+            for entry in entries.flatten() {
+                if let Ok(metadata) = entry.metadata() {
+                    if metadata.is_file() {
+                        let size = metadata.len();
+                        files.push(TempFile {
+                            path: entry.path().to_string_lossy().to_string(),
+                            name: entry.file_name().to_string_lossy().to_string(),
+                            size,
+                            category: "Dumps de Crash".to_string(),
+                            root_path: root_path.clone(),
+                        });
+                        total_size += size;
+                    }
+                }
+            }
+        }
+    }
+
+    // Windows Error Reporting
+    let wer_path = PathBuf::from("C:\\ProgramData\\Microsoft\\Windows\\WER");
+    if wer_path.exists() {
+        let root_path = wer_path.to_string_lossy().to_string();
+        if let Ok(entries) = fs::read_dir(&wer_path) {
+            for entry in entries.flatten() {
+                if let Ok(metadata) = entry.metadata() {
+                    let size = if metadata.is_file() {
+                        metadata.len()
+                    } else if metadata.is_dir() {
+                        get_dir_size(&entry.path())
+                    } else {
+                        0
+                    };
+
+                    if size > 0 {
+                        files.push(TempFile {
+                            path: entry.path().to_string_lossy().to_string(),
+                            name: entry.file_name().to_string_lossy().to_string(),
+                            size,
+                            category: "Relatórios de Erro do Windows".to_string(),
+                            root_path: root_path.clone(),
+                        });
+                        total_size += size;
+                    }
+                }
+            }
+        }
+    }
+
+    // Browser caches and additional caches
     if let Ok(local_app_data) = std::env::var("LOCALAPPDATA") {
         let browser_caches = vec![
-            (format!("{}\\Google\\Chrome\\User Data\\Default\\Cache", local_app_data), "Cache do Chrome"),
-            (format!("{}\\Microsoft\\Edge\\User Data\\Default\\Cache", local_app_data), "Cache do Edge"),
-            (format!("{}\\Mozilla\\Firefox\\Profiles", local_app_data), "Cache do Firefox"),
+            (
+                format!(
+                    "{}\\Google\\Chrome\\User Data\\Default\\Cache",
+                    local_app_data
+                ),
+                "Cache do Chrome",
+            ),
+            (
+                format!(
+                    "{}\\Microsoft\\Edge\\User Data\\Default\\Cache",
+                    local_app_data
+                ),
+                "Cache do Edge",
+            ),
+            (
+                format!("{}\\Mozilla\\Firefox\\Profiles", local_app_data),
+                "Cache do Firefox",
+            ),
+            (
+                format!("{}\\Microsoft\\Windows\\INetCache", local_app_data),
+                "Cache do Internet Explorer",
+            ),
+            (
+                format!("{}\\Microsoft\\Windows\\Explorer", local_app_data),
+                "Miniaturas do Explorer",
+            ),
         ];
 
         for (cache_path, category) in browser_caches {
+            let path = PathBuf::from(&cache_path);
+            if path.exists() {
+                let root_path = cache_path.clone();
+                if let Ok(entries) = fs::read_dir(&path) {
+                    for entry in entries.flatten() {
+                        if let Ok(metadata) = entry.metadata() {
+                            let size = if metadata.is_file() {
+                                metadata.len()
+                            } else if metadata.is_dir() {
+                                get_dir_size(&entry.path())
+                            } else {
+                                0
+                            };
+
+                            if size > 0 {
+                                files.push(TempFile {
+                                    path: entry.path().to_string_lossy().to_string(),
+                                    name: entry.file_name().to_string_lossy().to_string(),
+                                    size,
+                                    category: category.to_string(),
+                                    root_path: root_path.clone(),
+                                });
+                                total_size += size;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Application caches (Discord, Spotify, etc.)
+    if let Ok(app_data) = std::env::var("APPDATA") {
+        let app_caches = vec![
+            (format!("{}\\Discord\\Cache", app_data), "Cache do Discord"),
+            (
+                format!("{}\\Discord\\Code Cache", app_data),
+                "Code Cache do Discord",
+            ),
+            (
+                format!("{}\\Spotify\\Storage", app_data),
+                "Cache do Spotify",
+            ),
+        ];
+
+        for (cache_path, category) in app_caches {
             let path = PathBuf::from(&cache_path);
             if path.exists() {
                 let root_path = cache_path.clone();
@@ -287,10 +469,14 @@ fn get_disk_info() -> Result<Vec<DiskInfo>, String> {
 #[tauri::command]
 fn open_folder_location(path: String) -> Result<(), String> {
     use std::process::Command;
-    
+
     let path_buf = PathBuf::from(&path);
     let folder_path = if path_buf.is_file() {
-        path_buf.parent().unwrap_or(&path_buf).to_string_lossy().to_string()
+        path_buf
+            .parent()
+            .unwrap_or(&path_buf)
+            .to_string_lossy()
+            .to_string()
     } else {
         path
     };
