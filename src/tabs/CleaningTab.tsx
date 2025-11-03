@@ -9,24 +9,24 @@ export default function CleaningTab() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.3 }}
-      className="space-y-4 md:space-y-6"
+      transition={{ duration: 0.2 }}
+      className="space-y-6 md:space-y-8"
     >
-      <h2 className="text-2xl md:text-3xl font-bold text-white">Limpeza do Sistema</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+      <h2 className="text-xl md:text-2xl font-medium text-neutral-200 tracking-tight">Limpeza do Sistema</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
         {/* Arquivos Temporários Card */}
-        <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700/50">
+        <Card className="bg-[#141414] border-[#1f1f1f] hover:border-[#2a2a2a]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <Trash2 className="w-5 h-5 text-blue-500" />
+            <CardTitle className="flex items-center gap-3 text-neutral-200 text-base font-medium">
+              <Trash2 className="w-4 h-4 text-neutral-400" />
               Arquivos Temporários
             </CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardDescription className="text-neutral-500 text-sm">
               Limpar cache e arquivos temporários
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-300 text-sm">2.4 GB disponíveis para limpeza</p>
+            <p className="text-neutral-400 text-sm">2.4 GB disponíveis para limpeza</p>
           </CardContent>
           <CardFooter>
             <Button>Limpar Agora</Button>
@@ -34,18 +34,18 @@ export default function CleaningTab() {
         </Card>
 
         {/* Lixeira Card */}
-        <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700/50">
+        <Card className="bg-[#141414] border-[#1f1f1f] hover:border-[#2a2a2a]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <Trash className="w-5 h-5 text-blue-500" />
+            <CardTitle className="flex items-center gap-3 text-neutral-200 text-base font-medium">
+              <Trash className="w-4 h-4 text-neutral-400" />
               Lixeira
             </CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardDescription className="text-neutral-500 text-sm">
               Esvaziar lixeira do sistema
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-300 text-sm">156 MB na lixeira</p>
+            <p className="text-neutral-400 text-sm">156 MB na lixeira</p>
           </CardContent>
           <CardFooter>
             <Button>Esvaziar</Button>
@@ -53,18 +53,18 @@ export default function CleaningTab() {
         </Card>
 
         {/* Downloads Antigos Card */}
-        <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700/50">
+        <Card className="bg-[#141414] border-[#1f1f1f] hover:border-[#2a2a2a]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <FolderOpen className="w-5 h-5 text-blue-500" />
+            <CardTitle className="flex items-center gap-3 text-neutral-200 text-base font-medium">
+              <FolderOpen className="w-4 h-4 text-neutral-400" />
               Downloads Antigos
             </CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardDescription className="text-neutral-500 text-sm">
               Remover arquivos de download antigos
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-300 text-sm">Analisar arquivos com mais de 30 dias</p>
+            <p className="text-neutral-400 text-sm">Analisar arquivos com mais de 30 dias</p>
           </CardContent>
           <CardFooter>
             <Button>Analisar</Button>

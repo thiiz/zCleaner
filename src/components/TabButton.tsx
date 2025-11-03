@@ -13,15 +13,15 @@ export default function TabButton({ icon: Icon, label, active, onClick }: TabBut
     <button
       onClick={onClick}
       className={cn(
-        "w-full flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2.5 md:py-3 rounded-sm transition-all duration-150",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900",
+        "w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-200",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600",
         active
-          ? "bg-blue-600 text-white shadow-sm shadow-blue-500/50 active:bg-blue-700 active:scale-[0.98]"
-          : "text-gray-300 hover:bg-gray-700/50 hover:text-white active:bg-gray-700 active:scale-[0.98]"
+          ? "bg-neutral-200 text-neutral-900 active:scale-[0.98]"
+          : "text-neutral-400 hover:bg-[#1a1a1a] hover:text-neutral-300 active:bg-[#141414] active:scale-[0.98]"
       )}
     >
-      <Icon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
-      <span className="font-medium text-sm md:text-base">{label}</span>
+      <Icon className="w-4 h-4 flex-shrink-0" />
+      <span className="font-medium text-sm">{label}</span>
     </button>
   );
 }

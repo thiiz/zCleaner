@@ -14,12 +14,12 @@ function App() {
   const [activeTab, setActiveTab] = useState<TabType>('cleaning');
 
   return (
-    <div className="min-h-screen min-w-[800px] bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+    <div className="min-h-screen min-w-[800px] bg-[#0a0a0a]">
       <TitleBar />
       <Header />
       <div className="flex h-[calc(100vh-112px)] min-h-[520px]">
         <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-        <main className="flex-1 p-4 md:p-6 overflow-y-auto">
+        <main className="flex-1 p-6 md:p-8 overflow-y-auto bg-[#0f0f0f]">
           <AnimatePresence mode="wait">
             {activeTab === 'cleaning' && <CleaningTab key="cleaning" />}
             {activeTab === 'performance' && <PerformanceTab key="performance" />}

@@ -25,8 +25,8 @@ const tabs: Tab[] = [
 
 export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   return (
-    <aside className="w-56 md:w-64 bg-gray-800/50 backdrop-blur-sm border-r border-gray-700/50 p-3 md:p-4 flex-shrink-0">
-      <nav className="space-y-2">
+    <aside className="w-56 md:w-64 bg-[#0a0a0a] border-r border-[#1a1a1a] p-4 md:p-5 flex-shrink-0">
+      <nav className="space-y-1.5">
         {tabs.map(tab => (
           <TabButton
             key={tab.id}
