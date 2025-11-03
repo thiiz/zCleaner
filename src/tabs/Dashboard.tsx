@@ -476,7 +476,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors cursor-pointer group">
+              <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors group">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
@@ -497,7 +497,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors cursor-pointer group">
+              <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors group">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-green-500/10 group-hover:bg-green-500/20 transition-colors">
