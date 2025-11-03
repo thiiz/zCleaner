@@ -18,7 +18,8 @@
         "center": true,
         "height": 856,
         "minHeight": 856,
-        "decorations": false
+        "decorations": false,
+        "transparent": false
       }
     ],
     "security": {

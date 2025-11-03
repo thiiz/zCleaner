@@ -134,6 +134,11 @@
 
   body {
     @apply bg-background text-foreground antialiased;
+    /* Improve font rendering on Windows */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-smooth: always;
   }
 
   /* Dark scrollbar styles */
