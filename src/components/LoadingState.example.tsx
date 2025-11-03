@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { LoadingState } from './LoadingState';
+import { LoadingState } from './enhanced/LoadingState';
 
 export const LoadingStateExamples: React.FC = () => {
   return (

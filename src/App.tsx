@@ -1,7 +1,6 @@
 import TitleBar from './components/TitleBar';
-import Header from './components/Header';
-import PerformanceTab from './tabs/PerformanceTab';
-import { ToastProvider } from './components/enhanced/ToastContainer';
+import Dashboard from './tabs/Dashboard';
+import { ToastProvider } from './components/ToastContainer';
 import './App.css';
 
 function App() {
@@ -9,7 +8,6 @@ function App() {
     <ToastProvider position="top-right" maxToasts={3}>
       <div className="min-h-screen min-w-[800px] bg-[#0a0a0a]">
         <TitleBar />
-        <Header />
         <main className="overflow-y-auto bg-[#0f0f0f] h-[calc(100vh-112px)] min-h-[520px]" style={{ padding: 'var(--padding-mobile)' }}>
           <style>{`
             @media (min-width: 1024px) {
@@ -18,7 +16,7 @@ function App() {
               }
             }
           `}</style>
-          <PerformanceTab />
+          <Dashboard />
         </main>
       </div>
     </ToastProvider>

@@ -6,7 +6,7 @@
  */
 
 import React, { useState } from 'react';
-import { AnimatedButton } from './AnimatedButton';
+import { AnimatedButton } from './enhanced/AnimatedButton';
 import { Save, Trash2, Download, Settings } from 'lucide-react';
 
 export const AnimatedButtonExamples: React.FC = () => {

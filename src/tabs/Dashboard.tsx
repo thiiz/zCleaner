@@ -3,10 +3,10 @@ import { motion } from 'framer-motion';
 import { Cpu, MemoryStick, HardDrive, Activity, Zap, RefreshCw, TrendingUp, Monitor, Trash2, CheckCircle2, ChevronRight, ExternalLink } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
-import { InteractiveCard } from '@/components/enhanced/InteractiveCard';
-import { AnimatedButton } from '@/components/enhanced/AnimatedButton';
-import { LoadingState } from '@/components/enhanced/LoadingState';
-import StatDisplay from '@/components/enhanced/StatDisplay';
+import { InteractiveCard } from '@/components/InteractiveCard';
+import { AnimatedButton } from '@/components/AnimatedButton';
+import { LoadingState } from '@/components/LoadingState';
+import StatDisplay from '@/components/StatDisplay';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
@@ -40,7 +40,7 @@ const getPageVariants = (shouldReduceMotion: boolean) => ({
   }
 });
 
-export default function PerformanceTab() {
+export default function Dashboard() {
   const shouldReduceMotion = useReducedMotion();
   const { systemInfo, diskInfo, loading, error, refetch } = useSystemInfo();
 
