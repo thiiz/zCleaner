@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Trash2, Trash, FolderOpen, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Trash2, Trash, FolderOpen, CheckCircle2, ChevronRight, ExternalLink } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
@@ -17,6 +17,7 @@ interface TempFile {
   name: string;
   size: number;
   category: string;
+  root_path: string;
 }
 
 interface ScanResult {
@@ -69,6 +70,12 @@ export default function CleaningTab() {
       setScanResult(result);
       // Select all by default
       setSelectedFiles(new Set(result.files.map(f => f.path)));
+      // Collapse all categories by default
+      const categories = result.files.reduce((acc, file) => {
+        acc.add(file.category);
+        return acc;
+      }, new Set<string>());
+      setCollapsedCategories(categories);
     } catch (error) {
       console.error('Erro ao escanear:', error);
     } finally {
@@ -109,6 +116,14 @@ export default function CleaningTab() {
       newCollapsed.add(category);
     }
     setCollapsedCategories(newCollapsed);
+  };
+
+  const handleOpenFolder = async (path: string) => {
+    try {
+      await invoke('open_folder_location', { path });
+    } catch (error) {
+      console.error('Erro ao abrir pasta:', error);
+    }
   };
 
   useEffect(() => {
@@ -301,34 +316,32 @@ export default function CleaningTab() {
                 <p className="text-[var(--color-text-secondary)] text-xs">
                   {Object.keys(groupedFiles).length} categorias encontradas
                 </p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setCollapsedCategories(new Set())}
-                    className="text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors duration-[var(--transition-fast)]"
-                  >
-                    Expandir Todas
-                  </button>
-                  <span className="text-[var(--color-border-hover)]">|</span>
-                  <button
-                    onClick={() => setCollapsedCategories(new Set(Object.keys(groupedFiles)))}
-                    className="text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors duration-[var(--transition-fast)]"
-                  >
-                    Colapsar Todas
-                  </button>
-                </div>
+                <button
+                  onClick={() => {
+                    const allCollapsed = collapsedCategories.size === Object.keys(groupedFiles).length;
+                    setCollapsedCategories(allCollapsed ? new Set() : new Set(Object.keys(groupedFiles)));
+                  }}
+                  className="text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors duration-[var(--transition-fast)]"
+                >
+                  {collapsedCategories.size === Object.keys(groupedFiles).length ? 'Expandir Todas' : 'Colapsar Todas'}
+                </button>
               </div>
-              <div className="overflow-y-auto max-h-[400px] px-6 py-4 space-y-3">
-                {Object.entries(groupedFiles).map(([category, files]) => {
+              <div className="overflow-y-auto max-h-[400px] px-6 py-4 space-y-4">
+                {Object.entries(groupedFiles).map(([category, files], index) => {
                   const categorySize = files.reduce((sum, f) => sum + f.size, 0);
                   const allSelected = files.every(f => selectedFiles.has(f.path));
                   const isCollapsed = collapsedCategories.has(category);
+                  const categoryRootPath = files[0]?.root_path || '';
 
                   return (
                     <div key={category} className="space-y-2">
-                      <div className="flex items-center gap-2 p-3 rounded-lg border border-[var(--color-border-default)] hover:border-[var(--color-border-hover)] transition-colors duration-[var(--transition-base)]">
+                      {index > 0 && (
+                        <div className="border-t border-[var(--color-border-default)] pt-4" />
+                      )}
+                      <div className="flex items-start gap-2 p-3 rounded-lg border border-[var(--color-border-default)] hover:border-[var(--color-border-hover)] transition-colors duration-[var(--transition-base)] bg-[var(--color-bg-base)]">
                         <motion.button
                           onClick={() => toggleCollapse(category)}
-                          className="p-1 hover:bg-[var(--color-bg-elevated)] rounded transition-colors duration-[var(--transition-fast)]"
+                          className="p-1 hover:bg-[var(--color-bg-elevated)] rounded transition-colors duration-[var(--transition-fast)] mt-0.5"
                           aria-label={isCollapsed ? 'Expandir categoria' : 'Colapsar categoria'}
                           whileHover={{ scale: shouldReduceMotion ? 1 : 1.05 }}
                           whileTap={{ scale: shouldReduceMotion ? 1 : 0.95 }}
@@ -340,15 +353,17 @@ export default function CleaningTab() {
                             <ChevronRight className="w-4 h-4 text-[var(--color-text-secondary)]" />
                           </motion.div>
                         </motion.button>
-                        <label className="flex items-center gap-3 cursor-pointer flex-1">
+                        <label className="flex items-center gap-3 cursor-pointer flex-1 min-w-0">
                           <Checkbox
                             checked={allSelected}
                             onCheckedChange={() => toggleCategory(category)}
                           />
-                          <div className="flex-1">
+                          <div className="flex-1 min-w-0">
                             <p className="text-[var(--color-text-primary)] text-sm font-medium">{category}</p>
                             <p className="text-[var(--color-text-tertiary)] text-xs">{files.length} itens</p>
                           </div>
+                        </label>
+                        <div className="flex items-center gap-2">
                           <StatDisplay
                             label=""
                             value={formatBytes(categorySize)}
@@ -356,7 +371,20 @@ export default function CleaningTab() {
                             mono={true}
                             className="items-end"
                           />
-                        </label>
+                          <motion.button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenFolder(categoryRootPath);
+                            }}
+                            className="p-2 hover:bg-[var(--color-bg-elevated)] rounded transition-colors duration-[var(--transition-fast)] group"
+                            aria-label="Abrir local"
+                            whileHover={{ scale: shouldReduceMotion ? 1 : 1.05 }}
+                            whileTap={{ scale: shouldReduceMotion ? 1 : 0.95 }}
+                            title="Abrir Local"
+                          >
+                            <ExternalLink className="w-4 h-4 text-[var(--color-text-tertiary)] group-hover:text-[var(--color-text-primary)] transition-colors duration-[var(--transition-fast)]" />
+                          </motion.button>
+                        </div>
                       </div>
 
                       {!isCollapsed && (

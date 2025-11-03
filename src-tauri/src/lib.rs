@@ -10,6 +10,7 @@ pub struct TempFile {
     pub name: String,
     pub size: u64,
     pub category: String,
+    pub root_path: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -42,6 +43,7 @@ fn scan_temp_files() -> Result<ScanResult, String> {
     // Windows Temp folders
     if let Ok(temp_dir) = std::env::var("TEMP") {
         let temp_path = PathBuf::from(&temp_dir);
+        let root_path = temp_path.to_string_lossy().to_string();
         if let Ok(entries) = fs::read_dir(&temp_path) {
             for entry in entries.flatten() {
                 if let Ok(metadata) = entry.metadata() {
@@ -59,6 +61,7 @@ fn scan_temp_files() -> Result<ScanResult, String> {
                             name: entry.file_name().to_string_lossy().to_string(),
                             size,
                             category: "Arquivos Temporários do Windows".to_string(),
+                            root_path: root_path.clone(),
                         });
                         total_size += size;
                     }
@@ -70,6 +73,7 @@ fn scan_temp_files() -> Result<ScanResult, String> {
     // Windows Prefetch
     let prefetch_path = PathBuf::from("C:\\Windows\\Prefetch");
     if prefetch_path.exists() {
+        let root_path = prefetch_path.to_string_lossy().to_string();
         if let Ok(entries) = fs::read_dir(&prefetch_path) {
             for entry in entries.flatten() {
                 if let Ok(metadata) = entry.metadata() {
@@ -80,6 +84,7 @@ fn scan_temp_files() -> Result<ScanResult, String> {
                             name: entry.file_name().to_string_lossy().to_string(),
                             size,
                             category: "Prefetch do Windows".to_string(),
+                            root_path: root_path.clone(),
                         });
                         total_size += size;
                     }
@@ -99,15 +104,30 @@ fn scan_temp_files() -> Result<ScanResult, String> {
         for (cache_path, category) in browser_caches {
             let path = PathBuf::from(&cache_path);
             if path.exists() {
-                let size = get_dir_size(&path);
-                if size > 0 {
-                    files.push(TempFile {
-                        path: cache_path,
-                        name: category.to_string(),
-                        size,
-                        category: "Cache de Navegadores".to_string(),
-                    });
-                    total_size += size;
+                let root_path = cache_path.clone();
+                if let Ok(entries) = fs::read_dir(&path) {
+                    for entry in entries.flatten() {
+                        if let Ok(metadata) = entry.metadata() {
+                            let size = if metadata.is_file() {
+                                metadata.len()
+                            } else if metadata.is_dir() {
+                                get_dir_size(&entry.path())
+                            } else {
+                                0
+                            };
+
+                            if size > 0 {
+                                files.push(TempFile {
+                                    path: entry.path().to_string_lossy().to_string(),
+                                    name: entry.file_name().to_string_lossy().to_string(),
+                                    size,
+                                    category: category.to_string(),
+                                    root_path: root_path.clone(),
+                                });
+                                total_size += size;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -234,6 +254,44 @@ fn get_disk_info() -> Result<Vec<DiskInfo>, String> {
     Ok(disk_list)
 }
 
+#[tauri::command]
+fn open_folder_location(path: String) -> Result<(), String> {
+    use std::process::Command;
+    
+    let path_buf = PathBuf::from(&path);
+    let folder_path = if path_buf.is_file() {
+        path_buf.parent().unwrap_or(&path_buf).to_string_lossy().to_string()
+    } else {
+        path
+    };
+
+    #[cfg(target_os = "windows")]
+    {
+        Command::new("explorer")
+            .arg(&folder_path)
+            .spawn()
+            .map_err(|e| format!("Erro ao abrir pasta: {}", e))?;
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        Command::new("open")
+            .arg(&folder_path)
+            .spawn()
+            .map_err(|e| format!("Erro ao abrir pasta: {}", e))?;
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        Command::new("xdg-open")
+            .arg(&folder_path)
+            .spawn()
+            .map_err(|e| format!("Erro ao abrir pasta: {}", e))?;
+    }
+
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -242,7 +300,8 @@ pub fn run() {
             scan_temp_files,
             delete_temp_files,
             get_system_info,
-            get_disk_info
+            get_disk_info,
+            open_folder_location
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
