@@ -3,7 +3,6 @@ import { AnimatePresence } from 'framer-motion';
 import TitleBar from './components/TitleBar';
 import Header from './components/Header';
 import Sidebar, { type TabType } from './components/Sidebar';
-import CleaningTab from './tabs/CleaningTab';
 import PerformanceTab from './tabs/PerformanceTab';
 import StartupTab from './tabs/StartupTab';
 import PowerTab from './tabs/PowerTab';
@@ -29,7 +28,6 @@ function App() {
               }
             `}</style>
             <AnimatePresence mode="wait">
-              {activeTab === 'cleaning' && <CleaningTab key="cleaning" />}
               {activeTab === 'performance' && <PerformanceTab key="performance" />}
               {activeTab === 'startup' && <StartupTab key="startup" />}
               {activeTab === 'power' && <PowerTab key="power" />}

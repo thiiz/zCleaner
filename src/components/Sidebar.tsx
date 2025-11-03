@@ -1,8 +1,8 @@
-import { Trash2, Gauge, Settings, Battery } from 'lucide-react';
+import { Gauge, Settings, Battery } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import TabButton from './TabButton';
 
-export type TabType = 'cleaning' | 'performance' | 'startup' | 'power';
+export type TabType = 'performance' | 'startup' | 'power';
 
 interface SidebarProps {
   activeTab: TabType;
@@ -17,7 +17,6 @@ interface Tab {
 
 const tabs: Tab[] = [
   { id: 'performance', label: 'Desempenho', icon: Gauge },
-  { id: 'cleaning', label: 'Limpeza', icon: Trash2 },
   { id: 'startup', label: 'Inicialização', icon: Settings },
   { id: 'power', label: 'Energia', icon: Battery }
 ];
